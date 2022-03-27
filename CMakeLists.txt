@@ -1,14 +1,14 @@
 #
 # Copyright 2013-2020 Software Radio Systems Limited
 #
-# This file is part of srsLTE
+# This file is part of srsRAN
 #
-# srsLTE is free software: you can redistribute it and/or modify
+# srsRAN is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
 # published by the Free Software Foundation, either version 3 of
 # the License, or (at your option) any later version.
 #
-# srsLTE is distributed in the hope that it will be useful,
+# srsRAN is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # GNU Affero General Public License for more details.
@@ -31,14 +31,14 @@ endif(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
 # Project setup
 ########################################################################
 cmake_minimum_required(VERSION 2.6)
-project( SRSLTE )
+project( SRSRAN )
 message( STATUS "CMAKE_SYSTEM: " ${CMAKE_SYSTEM} )
 message( STATUS "CMAKE_SYSTEM_PROCESSOR: " ${CMAKE_SYSTEM_PROCESSOR} )
 message( STATUS "CMAKE_CXX_COMPILER: " ${CMAKE_CXX_COMPILER} )
 
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/modules")
-include(SRSLTEVersion) #sets version information
-include(SRSLTEPackage) #setup cpack
+include(SRSRANVersion) #sets version information
+include(SRSRANPackage) #setup cpack
 
 include(CTest)
 
@@ -55,8 +55,8 @@ set(CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE} CACHE STRING "")
 
 # Generate CMake to include build information
 configure_file(
-  ${PROJECT_SOURCE_DIR}/cmake/modules/SRSLTEbuildinfo.cmake.in
-  ${CMAKE_BINARY_DIR}/SRSLTEbuildinfo.cmake
+  ${PROJECT_SOURCE_DIR}/cmake/modules/SRSRANbuildinfo.cmake.in
+  ${CMAKE_BINARY_DIR}/SRSRANbuildinfo.cmake
 )
 
 ########################################################################
@@ -159,7 +159,7 @@ else(POLARSSL_FOUND)
     endif(BUILD_STATIC)
     add_definitions(-DHAVE_MBEDTLS)
   else(MBEDTLS_FOUND)
-    message(FATAL_ERROR "Either PolarSSL or mbedTLS are required to build srsLTE")
+    message(FATAL_ERROR "Either PolarSSL or mbedTLS are required to build srsRAN")
   endif (MBEDTLS_FOUND)
 endif(POLARSSL_FOUND)
 
@@ -250,7 +250,7 @@ if(Boost_FOUND)
   include_directories(${Boost_INCLUDE_DIRS})
   link_directories(${Boost_LIBRARY_DIRS})
 else(Boost_FOUND)
-  message(FATAL_ERROR "Boost required to build srsLTE")
+  message(FATAL_ERROR "Boost required to build srsRAN")
 endif (Boost_FOUND)
 
 if (ENABLE_TTCN3)
@@ -282,10 +282,10 @@ set(DATA_DIR share/${CPACK_PACKAGE_NAME})
 
 # Auto-generate config install helper and mark for installation
 configure_file(
-        ${PROJECT_SOURCE_DIR}/cmake/modules/SRSLTE_install_configs.sh.in
-        ${CMAKE_BINARY_DIR}/srslte_install_configs.sh
+        ${PROJECT_SOURCE_DIR}/cmake/modules/SRSRAN_install_configs.sh.in
+        ${CMAKE_BINARY_DIR}/srsran_install_configs.sh
 )
-install(PROGRAMS ${CMAKE_BINARY_DIR}/srslte_install_configs.sh DESTINATION ${RUNTIME_DIR})
+install(PROGRAMS ${CMAKE_BINARY_DIR}/srsran_install_configs.sh DESTINATION ${RUNTIME_DIR})
 
 # Disables the project to build when calling "make install"
 set(CMAKE_SKIP_INSTALL_ALL_DEPENDENCY TRUE)
@@ -523,7 +523,7 @@ foreach(_header ${headers})
         list(APPEND HEADERS_ALL ${tmp})
     endif(IS_DIRECTORY ${_header})
 endforeach()
-add_custom_target(add_srslte_headers SOURCES ${HEADERS_ALL})
+add_custom_target(add_srsran_headers SOURCES ${HEADERS_ALL})
 
 ########################################################################
 # Add the subdirectories

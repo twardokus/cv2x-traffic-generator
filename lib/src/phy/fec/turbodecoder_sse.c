@@ -1,14 +1,14 @@
 /*
  * Copyright 2013-2020 Software Radio Systems Limited
  *
- * This file is part of srsLTE.
+ * This file is part of srsRAN.
  *
- * srsLTE is free software: you can redistribute it and/or modify
+ * srsRAN is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
  * published by the Free Software Foundation, either version 3 of
  * the License, or (at your option) any later version.
  *
- * srsLTE is distributed in the hope that it will be useful,
+ * srsRAN is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Affero General Public License for more details.
@@ -26,8 +26,8 @@
 #include <string.h>
 #include <strings.h>
 
-#include "srslte/phy/fec/turbodecoder_sse.h"
-#include "srslte/phy/utils/vector.h"
+#include "srsran/phy/fec/turbodecoder_sse.h"
+#include "srsran/phy/utils/vector.h"
 
 #include <inttypes.h>
 
@@ -389,14 +389,14 @@ int tdec_sse_init(void** hh, uint32_t max_long_cb)
 
   h->max_long_cb = max_long_cb;
 
-  h->alpha = srslte_vec_i16_malloc((max_long_cb + TOTALTAIL + 1) * NUMSTATES);
+  h->alpha = srsran_vec_i16_malloc((max_long_cb + TOTALTAIL + 1) * NUMSTATES);
   if (!h->alpha) {
-    perror("srslte_vec_malloc");
+    perror("srsran_vec_malloc");
     return -1;
   }
-  h->branch = srslte_vec_i16_malloc((max_long_cb + TOTALTAIL + 1) * NUMSTATES);
+  h->branch = srsran_vec_i16_malloc((max_long_cb + TOTALTAIL + 1) * NUMSTATES);
   if (!h->branch) {
-    perror("srslte_vec_malloc");
+    perror("srsran_vec_malloc");
     return -1;
   }
   return 1;

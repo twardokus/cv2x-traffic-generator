@@ -1,14 +1,14 @@
 /*
  * Copyright 2013-2020 Software Radio Systems Limited
  *
- * This file is part of srsLTE.
+ * This file is part of srsRAN.
  *
- * srsLTE is free software: you can redistribute it and/or modify
+ * srsRAN is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
  * published by the Free Software Foundation, either version 3 of
  * the License, or (at your option) any later version.
  *
- * srsLTE is distributed in the hope that it will be useful,
+ * srsRAN is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Affero General Public License for more details.
@@ -19,16 +19,16 @@
  *
  */
 
-#include "srslte/upper/pdcp_entity_lte.h"
-#include "srslte/common/security.h"
+#include "srsran/upper/pdcp_entity_lte.h"
+#include "srsran/common/security.h"
 
-namespace srslte {
+namespace srsran {
 
 pdcp_entity_lte::pdcp_entity_lte(srsue::rlc_interface_pdcp*      rlc_,
                                  srsue::rrc_interface_pdcp*      rrc_,
                                  srsue::gw_interface_pdcp*       gw_,
-                                 srslte::task_handler_interface* task_executor_,
-                                 srslte::log_ref                 log_) :
+                                 srsran::task_handler_interface* task_executor_,
+                                 srsran::log_ref                 log_) :
   pdcp_entity_base(task_executor_, log_),
   rlc(rlc_),
   rrc(rrc_),
@@ -116,8 +116,8 @@ void pdcp_entity_lte::write_sdu(unique_byte_buffer_t sdu, bool blocking)
                 "TX %s SDU, SN=%d, integrity=%s, encryption=%s",
                 rrc->get_rb_name(lcid).c_str(),
                 tx_count,
-                srslte_direction_text[integrity_direction],
-                srslte_direction_text[encryption_direction]);
+                srsran_direction_text[integrity_direction],
+                srsran_direction_text[encryption_direction]);
 
   write_data_header(sdu, tx_count);
 
@@ -167,8 +167,8 @@ void pdcp_entity_lte::write_pdu(unique_byte_buffer_t pdu)
                 rrc->get_rb_name(lcid).c_str(),
                 sn,
                 pdu->N_bytes,
-                srslte_direction_text[integrity_direction],
-                srslte_direction_text[encryption_direction]);
+                srsran_direction_text[integrity_direction],
+                srsran_direction_text[encryption_direction]);
 
   if (is_srb()) {
     handle_srb_pdu(std::move(pdu));
@@ -186,7 +186,7 @@ void pdcp_entity_lte::write_pdu(unique_byte_buffer_t pdu)
  * Ref: 3GPP TS 36.323 v10.1.0 Section 5.1.2
  ***************************************************************************/
 // SRBs (5.1.2.2)
-void pdcp_entity_lte::handle_srb_pdu(srslte::unique_byte_buffer_t pdu)
+void pdcp_entity_lte::handle_srb_pdu(srsran::unique_byte_buffer_t pdu)
 {
   // Read SN from header
   uint32_t sn = read_data_header(pdu);
@@ -239,7 +239,7 @@ void pdcp_entity_lte::handle_srb_pdu(srslte::unique_byte_buffer_t pdu)
 }
 
 // DRBs mapped on RLC UM (5.1.2.1.3)
-void pdcp_entity_lte::handle_um_drb_pdu(srslte::unique_byte_buffer_t pdu)
+void pdcp_entity_lte::handle_um_drb_pdu(srsran::unique_byte_buffer_t pdu)
 {
   uint32_t sn = read_data_header(pdu);
   discard_data_header(pdu);
@@ -266,7 +266,7 @@ void pdcp_entity_lte::handle_um_drb_pdu(srslte::unique_byte_buffer_t pdu)
 }
 
 // DRBs mapped on RLC AM, without re-ordering (5.1.2.1.2)
-void pdcp_entity_lte::handle_am_drb_pdu(srslte::unique_byte_buffer_t pdu)
+void pdcp_entity_lte::handle_am_drb_pdu(srsran::unique_byte_buffer_t pdu)
 {
   uint32_t sn = read_data_header(pdu);
   discard_data_header(pdu);
@@ -370,4 +370,4 @@ bool pdcp_entity_lte::check_valid_config()
   return true;
 }
 
-} // namespace srslte
+} // namespace srsran

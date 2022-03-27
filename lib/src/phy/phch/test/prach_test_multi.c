@@ -1,14 +1,14 @@
 /*
  * Copyright 2013-2020 Software Radio Systems Limited
  *
- * This file is part of srsLTE.
+ * This file is part of srsRAN.
  *
- * srsLTE is free software: you can redistribute it and/or modify
+ * srsRAN is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
  * published by the Free Software Foundation, either version 3 of
  * the License, or (at your option) any later version.
  *
- * srsLTE is distributed in the hope that it will be useful,
+ * srsRAN is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Affero General Public License for more details.
@@ -27,8 +27,8 @@
 #include <time.h>
 #include <unistd.h>
 
-#include "srslte/phy/phch/prach.h"
-#include "srslte/phy/utils/debug.h"
+#include "srsran/phy/phch/prach.h"
+#include "srsran/phy/utils/debug.h"
 
 #define MAX_LEN 70176
 
@@ -79,7 +79,7 @@ void parse_args(int argc, char** argv)
 int main(int argc, char** argv)
 {
   parse_args(argc, argv);
-  srslte_prach_t prach;
+  srsran_prach_t prach;
 
   bool high_speed_flag = false;
 
@@ -88,7 +88,7 @@ int main(int argc, char** argv)
   cf_t preamble_sum[MAX_LEN];
   memset(preamble_sum, 0, sizeof(cf_t) * MAX_LEN);
 
-  srslte_prach_cfg_t prach_cfg;
+  srsran_prach_cfg_t prach_cfg;
   ZERO_OBJECT(prach_cfg);
   prach_cfg.config_idx       = preamble_format;
   prach_cfg.hs_flag          = high_speed_flag;
@@ -97,11 +97,11 @@ int main(int argc, char** argv)
   prach_cfg.zero_corr_zone   = zero_corr_zone;
   prach_cfg.num_ra_preambles = num_ra_preambles;
 
-  if (srslte_prach_init(&prach, srslte_symbol_sz(nof_prb))) {
+  if (srsran_prach_init(&prach, srsran_symbol_sz(nof_prb))) {
     return -1;
   }
 
-  if (srslte_prach_set_cfg(&prach, &prach_cfg, nof_prb)) {
+  if (srsran_prach_set_cfg(&prach, &prach_cfg, nof_prb)) {
     ERROR("Error initiating PRACH object\n");
     return -1;
   }
@@ -114,10 +114,10 @@ int main(int argc, char** argv)
   for (int i = 0; i < 64; i++)
     indices[i] = 0;
 
-  srslte_prach_set_detect_factor(&prach, 10);
+  srsran_prach_set_detect_factor(&prach, 10);
 
   for (seq_index = 0; seq_index < n_seqs; seq_index++) {
-    srslte_prach_gen(&prach, seq_index, frequency_offset, preamble);
+    srsran_prach_gen(&prach, seq_index, frequency_offset, preamble);
 
     for (int i = 0; i < prach.N_cp + prach.N_seq; i++) {
       preamble_sum[i] += preamble[i];
@@ -128,7 +128,7 @@ int main(int argc, char** argv)
   if (preamble_format == 2 || preamble_format == 3) {
     prach_len /= 2;
   }
-  srslte_prach_detect(&prach, 0, &preamble_sum[prach.N_cp], prach_len, indices, &n_indices);
+  srsran_prach_detect(&prach, 0, &preamble_sum[prach.N_cp], prach_len, indices, &n_indices);
 
   if (n_indices != n_seqs) {
     return -1;
@@ -140,7 +140,7 @@ int main(int argc, char** argv)
     }
   }
 
-  srslte_prach_free(&prach);
+  srsran_prach_free(&prach);
   printf("Done\n");
   exit(0);
 }

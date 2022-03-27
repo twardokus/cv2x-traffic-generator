@@ -1,14 +1,14 @@
 /*
  * Copyright 2013-2020 Software Radio Systems Limited
  *
- * This file is part of srsLTE.
+ * This file is part of srsRAN.
  *
- * srsLTE is free software: you can redistribute it and/or modify
+ * srsRAN is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
  * published by the Free Software Foundation, either version 3 of
  * the License, or (at your option) any later version.
  *
- * srsLTE is distributed in the hope that it will be useful,
+ * srsRAN is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Affero General Public License for more details.
@@ -19,8 +19,8 @@
  *
  */
 
-#include "srslte/srslte.h"
-#include <srslte/phy/utils/random.h>
+#include "srsran/srsran.h"
+#include <srsran/phy/utils/random.h>
 
 bool zf_solver   = false;
 bool mmse_solver = false;
@@ -32,11 +32,11 @@ static uint32_t nof_repetitions = 1;
 #define MAX_FUNCTIONS (64)
 #define MAX_BLOCKS (16)
 
-static srslte_random_t random_h = NULL;
-#define RANDOM_F() srslte_random_uniform_real_dist(random_h, -1.0f, +1.0f)
-#define RANDOM_S() ((int16_t)srslte_random_uniform_int_dist(random_h, -255, +255))
-#define RANDOM_B() ((int8_t)srslte_random_uniform_int_dist(random_h, -127, +127))
-#define RANDOM_CF() srslte_random_uniform_complex_dist(random_h, -1.0f, +1.0f)
+static srsran_random_t random_h = NULL;
+#define RANDOM_F() srsran_random_uniform_real_dist(random_h, -1.0f, +1.0f)
+#define RANDOM_S() ((int16_t)srsran_random_uniform_int_dist(random_h, -255, +255))
+#define RANDOM_B() ((int8_t)srsran_random_uniform_int_dist(random_h, -127, +127))
+#define RANDOM_CF() srsran_random_uniform_complex_dist(random_h, -1.0f, +1.0f)
 
 #define TEST_CALL(TEST_CODE)                                                                                           \
   gettimeofday(&start, NULL);                                                                                          \
@@ -66,7 +66,7 @@ static srslte_random_t random_h = NULL;
     return passed;                                                                                                     \
   }
 
-#define MALLOC(TYPE, NAME) TYPE* NAME = srslte_vec_malloc(sizeof(TYPE) * block_size)
+#define MALLOC(TYPE, NAME) TYPE* NAME = srsran_vec_malloc(sizeof(TYPE) * block_size)
 
 static double elapsed_us(struct timeval* ts_start, struct timeval* ts_end)
 {
@@ -87,7 +87,7 @@ float squared_error(cf_t a, cf_t b)
 }
 
 TEST(
-    srslte_vec_xor_bbb, MALLOC(int8_t, x); MALLOC(int8_t, y); MALLOC(int8_t, z);
+    srsran_vec_xor_bbb, MALLOC(int8_t, x); MALLOC(int8_t, y); MALLOC(int8_t, z);
 
     cf_t gold = 0.0f;
     for (int i = 0; i < block_size; i++) {
@@ -95,7 +95,7 @@ TEST(
       y[i] = RANDOM_B();
     }
 
-    TEST_CALL(srslte_vec_xor_bbb(x, y, z, block_size))
+    TEST_CALL(srsran_vec_xor_bbb(x, y, z, block_size))
 
         for (int i = 0; i < block_size; i++) {
           gold = x[i] ^ y[i];
@@ -106,12 +106,12 @@ TEST(
     free(y);
     free(z);)
 
-TEST(srslte_vec_acc_ff, MALLOC(float, x); float z = 0;
+TEST(srsran_vec_acc_ff, MALLOC(float, x); float z = 0;
 
      cf_t gold = 0.0f;
      for (int i = 0; i < block_size; i++) { x[i] = RANDOM_F(); }
 
-     TEST_CALL(z = srslte_vec_acc_ff(x, block_size))
+     TEST_CALL(z = srsran_vec_acc_ff(x, block_size))
 
          for (int i = 0; i < block_size; i++) { gold += x[i]; }
 
@@ -120,7 +120,7 @@ TEST(srslte_vec_acc_ff, MALLOC(float, x); float z = 0;
      free(x);)
 
 TEST(
-    srslte_vec_dot_prod_sss, MALLOC(int16_t, x); MALLOC(int16_t, y); int16_t z = 0;
+    srsran_vec_dot_prod_sss, MALLOC(int16_t, x); MALLOC(int16_t, y); int16_t z = 0;
 
     int16_t gold = 0.0f;
     for (int i = 0; i < block_size; i++) {
@@ -128,7 +128,7 @@ TEST(
       y[i] = RANDOM_S();
     }
 
-    TEST_CALL(z = srslte_vec_dot_prod_sss(x, y, block_size))
+    TEST_CALL(z = srsran_vec_dot_prod_sss(x, y, block_size))
 
         for (int i = 0; i < block_size; i++) { gold += x[i] * y[i]; }
 
@@ -138,7 +138,7 @@ TEST(
     free(y);)
 
 TEST(
-    srslte_vec_sum_sss, MALLOC(int16_t, x); MALLOC(int16_t, y); MALLOC(int16_t, z);
+    srsran_vec_sum_sss, MALLOC(int16_t, x); MALLOC(int16_t, y); MALLOC(int16_t, z);
 
     int16_t gold = 0;
     for (int i = 0; i < block_size; i++) {
@@ -146,7 +146,7 @@ TEST(
       y[i] = RANDOM_S();
     }
 
-    TEST_CALL(srslte_vec_sum_sss(x, y, z, block_size))
+    TEST_CALL(srsran_vec_sum_sss(x, y, z, block_size))
 
         for (int i = 0; i < block_size; i++) {
           gold = x[i] + y[i];
@@ -158,7 +158,7 @@ TEST(
     free(z);)
 
 TEST(
-    srslte_vec_sub_sss, MALLOC(int16_t, x); MALLOC(int16_t, y); MALLOC(int16_t, z);
+    srsran_vec_sub_sss, MALLOC(int16_t, x); MALLOC(int16_t, y); MALLOC(int16_t, z);
 
     int16_t gold = 0.0f;
     for (int i = 0; i < block_size; i++) {
@@ -166,7 +166,7 @@ TEST(
       y[i] = RANDOM_S();
     }
 
-    TEST_CALL(srslte_vec_sub_sss(x, y, z, block_size))
+    TEST_CALL(srsran_vec_sub_sss(x, y, z, block_size))
 
         for (int i = 0; i < block_size; i++) {
           gold = x[i] - y[i];
@@ -178,7 +178,7 @@ TEST(
     free(z);)
 
 TEST(
-    srslte_vec_prod_sss, MALLOC(int16_t, x); MALLOC(int16_t, y); MALLOC(int16_t, z);
+    srsran_vec_prod_sss, MALLOC(int16_t, x); MALLOC(int16_t, y); MALLOC(int16_t, z);
 
     int16_t gold = 0.0f;
     for (int i = 0; i < block_size; i++) {
@@ -186,7 +186,7 @@ TEST(
       y[i] = RANDOM_S();
     }
 
-    TEST_CALL(srslte_vec_prod_sss(x, y, z, block_size))
+    TEST_CALL(srsran_vec_prod_sss(x, y, z, block_size))
 
         for (int i = 0; i < block_size; i++) {
           gold = x[i] * y[i];
@@ -198,7 +198,7 @@ TEST(
     free(z);)
 
 TEST(
-    srslte_vec_neg_sss, MALLOC(int16_t, x); MALLOC(int16_t, y); MALLOC(int16_t, z);
+    srsran_vec_neg_sss, MALLOC(int16_t, x); MALLOC(int16_t, y); MALLOC(int16_t, z);
 
     int16_t gold = 0.0f;
     for (int i = 0; i < block_size; i++) {
@@ -208,7 +208,7 @@ TEST(
       } while (!y[i]);
     }
 
-    TEST_CALL(srslte_vec_neg_sss(x, y, z, block_size))
+    TEST_CALL(srsran_vec_neg_sss(x, y, z, block_size))
 
         for (int i = 0; i < block_size; i++) {
           gold = y[i] < 0 ? -x[i] : x[i];
@@ -219,12 +219,12 @@ TEST(
     free(y);
     free(z);)
 
-TEST(srslte_vec_acc_cc, MALLOC(cf_t, x); cf_t z = 0.0f;
+TEST(srsran_vec_acc_cc, MALLOC(cf_t, x); cf_t z = 0.0f;
 
      cf_t gold = 0.0f;
      for (int i = 0; i < block_size; i++) { x[i] = RANDOM_F(); }
 
-     TEST_CALL(z = srslte_vec_acc_cc(x, block_size))
+     TEST_CALL(z = srsran_vec_acc_cc(x, block_size))
 
          for (int i = 0; i < block_size; i++) { gold += x[i]; }
 
@@ -233,7 +233,7 @@ TEST(srslte_vec_acc_cc, MALLOC(cf_t, x); cf_t z = 0.0f;
      free(x);)
 
 TEST(
-    srslte_vec_sum_fff, MALLOC(float, x); MALLOC(float, y); MALLOC(float, z);
+    srsran_vec_sum_fff, MALLOC(float, x); MALLOC(float, y); MALLOC(float, z);
 
     cf_t gold = 0.0f;
     for (int i = 0; i < block_size; i++) {
@@ -241,7 +241,7 @@ TEST(
       y[i] = RANDOM_F();
     }
 
-    TEST_CALL(srslte_vec_sum_fff(x, y, z, block_size))
+    TEST_CALL(srsran_vec_sum_fff(x, y, z, block_size))
 
         for (int i = 0; i < block_size; i++) {
           gold = x[i] + y[i];
@@ -253,7 +253,7 @@ TEST(
     free(z);)
 
 TEST(
-    srslte_vec_sub_fff, MALLOC(float, x); MALLOC(float, y); MALLOC(float, z);
+    srsran_vec_sub_fff, MALLOC(float, x); MALLOC(float, y); MALLOC(float, z);
 
     cf_t gold = 0.0f;
     for (int i = 0; i < block_size; i++) {
@@ -261,7 +261,7 @@ TEST(
       y[i] = RANDOM_F();
     }
 
-    TEST_CALL(srslte_vec_sub_fff(x, y, z, block_size))
+    TEST_CALL(srsran_vec_sub_fff(x, y, z, block_size))
 
         for (int i = 0; i < block_size; i++) {
           gold = x[i] - y[i];
@@ -273,7 +273,7 @@ TEST(
     free(z);)
 
 TEST(
-    srslte_vec_dot_prod_ccc, MALLOC(cf_t, x); MALLOC(cf_t, y); cf_t z = 0.0f;
+    srsran_vec_dot_prod_ccc, MALLOC(cf_t, x); MALLOC(cf_t, y); cf_t z = 0.0f;
 
     cf_t gold = 0.0f;
     for (int i = 0; i < block_size; i++) {
@@ -281,7 +281,7 @@ TEST(
       y[i] = RANDOM_CF();
     }
 
-    TEST_CALL(z = srslte_vec_dot_prod_ccc(x, y, block_size))
+    TEST_CALL(z = srsran_vec_dot_prod_ccc(x, y, block_size))
 
         for (int i = 0; i < block_size; i++) { gold += x[i] * y[i]; }
 
@@ -291,7 +291,7 @@ TEST(
     free(y);)
 
 TEST(
-    srslte_vec_dot_prod_conj_ccc, MALLOC(cf_t, x); MALLOC(cf_t, y); cf_t z = 0.0f;
+    srsran_vec_dot_prod_conj_ccc, MALLOC(cf_t, x); MALLOC(cf_t, y); cf_t z = 0.0f;
 
     cf_t gold = 0.0f;
     for (int i = 0; i < block_size; i++) {
@@ -299,7 +299,7 @@ TEST(
       y[i] = RANDOM_CF();
     }
 
-    TEST_CALL(z = srslte_vec_dot_prod_conj_ccc(x, y, block_size))
+    TEST_CALL(z = srsran_vec_dot_prod_conj_ccc(x, y, block_size))
 
         for (int i = 0; i < block_size; i++) { gold += x[i] * conjf(y[i]); }
 
@@ -309,7 +309,7 @@ TEST(
     free(y);)
 
 TEST(
-    srslte_vec_prod_ccc, MALLOC(cf_t, x); MALLOC(cf_t, y); MALLOC(cf_t, z);
+    srsran_vec_prod_ccc, MALLOC(cf_t, x); MALLOC(cf_t, y); MALLOC(cf_t, z);
 
     cf_t gold;
     for (int i = 0; i < block_size; i++) {
@@ -317,7 +317,7 @@ TEST(
       y[i] = RANDOM_CF();
     }
 
-    TEST_CALL(srslte_vec_prod_ccc(x, y, z, block_size))
+    TEST_CALL(srsran_vec_prod_ccc(x, y, z, block_size))
 
         for (int i = 0; i < block_size; i++) {
           gold = x[i] * y[i];
@@ -329,7 +329,7 @@ TEST(
     free(z);)
 
 TEST(
-    srslte_vec_prod_ccc_split, MALLOC(float, x_re); MALLOC(float, x_im); MALLOC(float, y_re); MALLOC(float, y_im);
+    srsran_vec_prod_ccc_split, MALLOC(float, x_re); MALLOC(float, x_im); MALLOC(float, y_re); MALLOC(float, y_im);
     MALLOC(float, z_re);
     MALLOC(float, z_im);
 
@@ -341,7 +341,7 @@ TEST(
       y_im[i] = RANDOM_F();
     }
 
-    TEST_CALL(srslte_vec_prod_ccc_split(x_re, x_im, y_re, y_im, z_re, z_im, block_size))
+    TEST_CALL(srsran_vec_prod_ccc_split(x_re, x_im, y_re, y_im, z_re, z_im, block_size))
 
         for (int i = 0; i < block_size; i++) {
           gold = (x_re[i] + I * x_im[i]) * (y_re[i] + I * y_im[i]);
@@ -356,7 +356,7 @@ TEST(
     free(z_im);)
 
 TEST(
-    srslte_vec_prod_conj_ccc, MALLOC(cf_t, x); MALLOC(cf_t, y); MALLOC(cf_t, z);
+    srsran_vec_prod_conj_ccc, MALLOC(cf_t, x); MALLOC(cf_t, y); MALLOC(cf_t, z);
 
     cf_t gold;
     for (int i = 0; i < block_size; i++) {
@@ -364,7 +364,7 @@ TEST(
       y[i] = RANDOM_CF();
     }
 
-    TEST_CALL(srslte_vec_prod_conj_ccc(x, y, z, block_size))
+    TEST_CALL(srsran_vec_prod_conj_ccc(x, y, z, block_size))
 
         for (int i = 0; i < block_size; i++) {
           gold = x[i] * conjf(y[i]);
@@ -375,12 +375,12 @@ TEST(
     free(y);
     free(z);)
 
-TEST(srslte_vec_sc_prod_ccc, MALLOC(cf_t, x); MALLOC(cf_t, z); cf_t y = RANDOM_CF();
+TEST(srsran_vec_sc_prod_ccc, MALLOC(cf_t, x); MALLOC(cf_t, z); cf_t y = RANDOM_CF();
 
      cf_t gold;
      for (int i = 0; i < block_size; i++) { x[i] = RANDOM_CF(); }
 
-     TEST_CALL(srslte_vec_sc_prod_ccc(x, y, z, block_size))
+     TEST_CALL(srsran_vec_sc_prod_ccc(x, y, z, block_size))
 
          for (int i = 0; i < block_size; i++) {
            gold = x[i] * y;
@@ -390,12 +390,12 @@ TEST(srslte_vec_sc_prod_ccc, MALLOC(cf_t, x); MALLOC(cf_t, z); cf_t y = RANDOM_C
      free(x);
      free(z);)
 
-TEST(srslte_vec_convert_fi, MALLOC(float, x); MALLOC(short, z); float scale = 1000.0f;
+TEST(srsran_vec_convert_fi, MALLOC(float, x); MALLOC(short, z); float scale = 1000.0f;
 
      short gold;
      for (int i = 0; i < block_size; i++) { x[i] = (float)RANDOM_F(); }
 
-     TEST_CALL(srslte_vec_convert_fi(x, scale, z, block_size))
+     TEST_CALL(srsran_vec_convert_fi(x, scale, z, block_size))
 
          for (int i = 0; i < block_size; i++) {
            gold       = (short)((x[i] * scale));
@@ -408,13 +408,13 @@ TEST(srslte_vec_convert_fi, MALLOC(float, x); MALLOC(short, z); float scale = 10
      free(x);
      free(z);)
 
-TEST(srslte_vec_convert_if, MALLOC(int16_t, x); MALLOC(float, z); float scale = 1000.0f;
+TEST(srsran_vec_convert_if, MALLOC(int16_t, x); MALLOC(float, z); float scale = 1000.0f;
 
      float gold;
      float k = 1.0f / scale;
      for (int i = 0; i < block_size; i++) { x[i] = (int16_t)RANDOM_S(); }
 
-     TEST_CALL(srslte_vec_convert_if(x, scale, z, block_size))
+     TEST_CALL(srsran_vec_convert_if(x, scale, z, block_size))
 
          for (int i = 0; i < block_size; i++) {
            gold       = ((float)x[i]) * k;
@@ -428,7 +428,7 @@ TEST(srslte_vec_convert_if, MALLOC(int16_t, x); MALLOC(float, z); float scale = 
      free(z);)
 
 TEST(
-    srslte_vec_prod_fff, MALLOC(float, x); MALLOC(float, y); MALLOC(float, z);
+    srsran_vec_prod_fff, MALLOC(float, x); MALLOC(float, y); MALLOC(float, z);
 
     float gold;
     for (int i = 0; i < block_size; i++) {
@@ -439,7 +439,7 @@ TEST(
       }
     }
 
-    TEST_CALL(srslte_vec_prod_fff(x, y, z, block_size))
+    TEST_CALL(srsran_vec_prod_fff(x, y, z, block_size))
 
         for (int i = 0; i < block_size; i++) {
           gold = x[i] * y[i];
@@ -454,7 +454,7 @@ TEST(
     free(z);)
 
 TEST(
-    srslte_vec_prod_cfc, MALLOC(cf_t, x); MALLOC(float, y); MALLOC(cf_t, z);
+    srsran_vec_prod_cfc, MALLOC(cf_t, x); MALLOC(float, y); MALLOC(cf_t, z);
 
     cf_t gold;
     for (int i = 0; i < block_size; i++) {
@@ -462,7 +462,7 @@ TEST(
       y[i] = RANDOM_F();
     }
 
-    TEST_CALL(srslte_vec_prod_cfc(x, y, z, block_size))
+    TEST_CALL(srsran_vec_prod_cfc(x, y, z, block_size))
 
         for (int i = 0; i < block_size; i++) {
           gold = x[i] * y[i];
@@ -473,12 +473,12 @@ TEST(
     free(y);
     free(z);)
 
-TEST(srslte_vec_sc_prod_fff, MALLOC(float, x); MALLOC(float, z); float y = RANDOM_F();
+TEST(srsran_vec_sc_prod_fff, MALLOC(float, x); MALLOC(float, z); float y = RANDOM_F();
 
      float gold;
      for (int i = 0; i < block_size; i++) { x[i] = RANDOM_CF(); }
 
-     TEST_CALL(srslte_vec_sc_prod_fff(x, y, z, block_size))
+     TEST_CALL(srsran_vec_sc_prod_fff(x, y, z, block_size))
 
          for (int i = 0; i < block_size; i++) {
            gold = x[i] * y;
@@ -489,11 +489,11 @@ TEST(srslte_vec_sc_prod_fff, MALLOC(float, x); MALLOC(float, z); float y = RANDO
      free(z);)
 
 TEST(
-    srslte_vec_abs_cf, MALLOC(cf_t, x); MALLOC(float, z); float gold;
+    srsran_vec_abs_cf, MALLOC(cf_t, x); MALLOC(float, z); float gold;
 
     for (int i = 0; i < block_size; i++) { x[i] = RANDOM_CF(); } x[0] = 0.0f;
 
-    TEST_CALL(srslte_vec_abs_cf(x, z, block_size))
+    TEST_CALL(srsran_vec_abs_cf(x, z, block_size))
 
         for (int i = 0; i < block_size; i++) {
           gold = sqrtf(crealf(x[i]) * crealf(x[i]) + cimagf(x[i]) * cimagf(x[i]));
@@ -503,11 +503,11 @@ TEST(
     free(x);
     free(z);)
 
-TEST(srslte_vec_abs_square_cf, MALLOC(cf_t, x); MALLOC(float, z); float gold;
+TEST(srsran_vec_abs_square_cf, MALLOC(cf_t, x); MALLOC(float, z); float gold;
 
      for (int i = 0; i < block_size; i++) { x[i] = RANDOM_CF(); }
 
-     TEST_CALL(srslte_vec_abs_square_cf(x, z, block_size))
+     TEST_CALL(srsran_vec_abs_square_cf(x, z, block_size))
 
          for (int i = 0; i < block_size; i++) {
            gold = crealf(x[i]) * crealf(x[i]) + cimagf(x[i]) * cimagf(x[i]);
@@ -517,11 +517,11 @@ TEST(srslte_vec_abs_square_cf, MALLOC(cf_t, x); MALLOC(float, z); float gold;
      free(x);
      free(z);)
 
-TEST(srslte_vec_sc_prod_cfc, MALLOC(cf_t, x); MALLOC(cf_t, z); cf_t gold; float h = RANDOM_F();
+TEST(srsran_vec_sc_prod_cfc, MALLOC(cf_t, x); MALLOC(cf_t, z); cf_t gold; float h = RANDOM_F();
 
      for (int i = 0; i < block_size; i++) { x[i] = RANDOM_CF(); }
 
-     TEST_CALL(srslte_vec_sc_prod_cfc(x, h, z, block_size))
+     TEST_CALL(srsran_vec_sc_prod_cfc(x, h, z, block_size))
 
          for (int i = 0; i < block_size; i++) {
            gold = x[i] * h;
@@ -532,7 +532,7 @@ TEST(srslte_vec_sc_prod_cfc, MALLOC(cf_t, x); MALLOC(cf_t, z); cf_t gold; float 
      free(z);)
 
 TEST(
-    srslte_vec_div_ccc, MALLOC(cf_t, x); MALLOC(cf_t, y); MALLOC(cf_t, z);
+    srsran_vec_div_ccc, MALLOC(cf_t, x); MALLOC(cf_t, y); MALLOC(cf_t, z);
 
     cf_t gold;
     for (int i = 0; i < block_size; i++) {
@@ -540,7 +540,7 @@ TEST(
       y[i] = RANDOM_CF();
     }
 
-    TEST_CALL(srslte_vec_div_ccc(x, y, z, block_size))
+    TEST_CALL(srsran_vec_div_ccc(x, y, z, block_size))
 
         for (int i = 0; i < block_size; i++) {
           gold = x[i] / y[i];
@@ -552,7 +552,7 @@ TEST(
     free(z);)
 
 TEST(
-    srslte_vec_div_cfc, MALLOC(cf_t, x); MALLOC(float, y); MALLOC(cf_t, z);
+    srsran_vec_div_cfc, MALLOC(cf_t, x); MALLOC(float, y); MALLOC(cf_t, z);
 
     cf_t gold;
     for (int i = 0; i < block_size; i++) {
@@ -560,7 +560,7 @@ TEST(
       y[i] = RANDOM_F() + 0.0001f;
     }
 
-    TEST_CALL(srslte_vec_div_cfc(x, y, z, block_size))
+    TEST_CALL(srsran_vec_div_cfc(x, y, z, block_size))
 
         for (int i = 0; i < block_size; i++) {
           gold = x[i] / y[i];
@@ -572,7 +572,7 @@ TEST(
     free(z);)
 
 TEST(
-    srslte_vec_div_fff, MALLOC(float, x); MALLOC(float, y); MALLOC(float, z);
+    srsran_vec_div_fff, MALLOC(float, x); MALLOC(float, y); MALLOC(float, z);
 
     cf_t gold;
     for (int i = 0; i < block_size; i++) {
@@ -580,7 +580,7 @@ TEST(
       y[i] = RANDOM_F() + 0.0001f;
     }
 
-    TEST_CALL(srslte_vec_div_fff(x, y, z, block_size))
+    TEST_CALL(srsran_vec_div_fff(x, y, z, block_size))
 
         for (int i = 0; i < block_size; i++) {
           gold = x[i] / y[i];
@@ -592,12 +592,12 @@ TEST(
     free(z);)
 
 TEST(
-    srslte_vec_max_fi, MALLOC(float, x);
+    srsran_vec_max_fi, MALLOC(float, x);
 
     for (int i = 0; i < block_size; i++) { x[i] = RANDOM_F(); }
 
     uint32_t max_index = 0;
-    TEST_CALL(max_index = srslte_vec_max_fi(x, block_size);)
+    TEST_CALL(max_index = srsran_vec_max_fi(x, block_size);)
 
         float gold_value = -INFINITY;
     uint32_t  gold_index = 0;
@@ -611,12 +611,12 @@ TEST(
     free(x);)
 
 TEST(
-    srslte_vec_max_abs_fi, MALLOC(float, x);
+    srsran_vec_max_abs_fi, MALLOC(float, x);
 
     for (int i = 0; i < block_size; i++) { x[i] = RANDOM_F(); }
 
     uint32_t max_index = 0;
-    TEST_CALL(max_index = srslte_vec_max_abs_fi(x, block_size);)
+    TEST_CALL(max_index = srsran_vec_max_abs_fi(x, block_size);)
 
         float gold_value = -INFINITY;
     uint32_t  gold_index = 0;
@@ -630,12 +630,12 @@ TEST(
     free(x);)
 
 TEST(
-    srslte_vec_max_abs_ci, MALLOC(cf_t, x);
+    srsran_vec_max_abs_ci, MALLOC(cf_t, x);
 
     for (int i = 0; i < block_size; i++) { x[i] = RANDOM_CF(); }
 
     uint32_t max_index = 0;
-    TEST_CALL(max_index = srslte_vec_max_abs_ci(x, block_size);)
+    TEST_CALL(max_index = srsran_vec_max_abs_ci(x, block_size);)
 
         float gold_value = -INFINITY;
     uint32_t  gold_index = 0;
@@ -650,13 +650,13 @@ TEST(
 
     free(x);)
 
-TEST(srslte_vec_apply_cfo, MALLOC(cf_t, x); MALLOC(cf_t, z);
+TEST(srsran_vec_apply_cfo, MALLOC(cf_t, x); MALLOC(cf_t, z);
 
      const float cfo = 0.1f;
      cf_t        gold;
      for (int i = 0; i < block_size; i++) { x[i] = RANDOM_CF(); }
 
-     TEST_CALL(srslte_vec_apply_cfo(x, cfo, z, block_size))
+     TEST_CALL(srsran_vec_apply_cfo(x, cfo, z, block_size))
 
          for (int i = 0; i < block_size; i++) {
            gold = x[i] * cexpf(_Complex_I * 2.0f * (float)M_PI * i * cfo);
@@ -667,13 +667,13 @@ TEST(srslte_vec_apply_cfo, MALLOC(cf_t, x); MALLOC(cf_t, z);
      free(z);)
 
 TEST(
-    srslte_vec_gen_sine, MALLOC(cf_t, z);
+    srsran_vec_gen_sine, MALLOC(cf_t, z);
 
     const float freq = 0.1f;
     cf_t        gold;
     cf_t        x = RANDOM_CF();
 
-    TEST_CALL(srslte_vec_gen_sine(x, freq, z, block_size))
+    TEST_CALL(srsran_vec_gen_sine(x, freq, z, block_size))
 
         for (int i = 0; i < block_size; i++) {
           gold = x * cexpf(_Complex_I * 2.0f * (float)M_PI * i * freq);
@@ -682,26 +682,26 @@ TEST(
 
     free(z);)
 
-TEST(srslte_vec_estimate_frequency, MALLOC(cf_t, x); float freq_gold = 0.1f; float freq = 0.1f;
+TEST(srsran_vec_estimate_frequency, MALLOC(cf_t, x); float freq_gold = 0.1f; float freq = 0.1f;
 
      for (int i = 0; i < block_size; i++) { x[i] = cexpf(-I * 2.0f * M_PI * (float)i * freq_gold); }
 
-     TEST_CALL(freq = srslte_vec_estimate_frequency(x, block_size);) if (block_size < 6) { mse = 0.0f; } else {
+     TEST_CALL(freq = srsran_vec_estimate_frequency(x, block_size);) if (block_size < 6) { mse = 0.0f; } else {
        mse = fabsf(freq - freq_gold);
      }
 
      free(x);)
 
-TEST(srslte_cfo_correct, srslte_cfo_t srslte_cfo; bzero(&srslte_cfo, sizeof(srslte_cfo)); MALLOC(cf_t, x);
+TEST(srsran_cfo_correct, srsran_cfo_t srsran_cfo; bzero(&srsran_cfo, sizeof(srsran_cfo)); MALLOC(cf_t, x);
      MALLOC(cf_t, z);
 
      const float cfo = 0.1f;
      cf_t        gold;
      for (int i = 0; i < block_size; i++) { x[i] = RANDOM_CF(); }
 
-     srslte_cfo_init(&srslte_cfo, block_size);
+     srsran_cfo_init(&srsran_cfo, block_size);
 
-     TEST_CALL(srslte_cfo_correct(&srslte_cfo, x, z, cfo))
+     TEST_CALL(srsran_cfo_correct(&srsran_cfo, x, z, cfo))
 
          for (int i = 0; i < block_size; i++) {
            gold = x[i] * cexpf(_Complex_I * 2.0f * (float)M_PI * i * cfo);
@@ -710,18 +710,18 @@ TEST(srslte_cfo_correct, srslte_cfo_t srslte_cfo; bzero(&srslte_cfo, sizeof(srsl
 
      free(x);
      free(z);
-     srslte_cfo_free(&srslte_cfo);)
+     srsran_cfo_free(&srsran_cfo);)
 
-TEST(srslte_cfo_correct_change, srslte_cfo_t srslte_cfo; bzero(&srslte_cfo, sizeof(srslte_cfo)); MALLOC(cf_t, x);
+TEST(srsran_cfo_correct_change, srsran_cfo_t srsran_cfo; bzero(&srsran_cfo, sizeof(srsran_cfo)); MALLOC(cf_t, x);
      MALLOC(cf_t, z);
 
      float cfo = 0.1f;
      cf_t  gold;
      for (int i = 0; i < block_size; i++) { x[i] = RANDOM_CF(); }
 
-     srslte_cfo_init(&srslte_cfo, block_size);
+     srsran_cfo_init(&srsran_cfo, block_size);
 
-     TEST_CALL(cfo = (i % 2) ? 0.1 : -0.1; srslte_cfo_correct(&srslte_cfo, x, z, cfo))
+     TEST_CALL(cfo = (i % 2) ? 0.1 : -0.1; srsran_cfo_correct(&srsran_cfo, x, z, cfo))
 
          for (int i = 0; i < block_size; i++) {
            gold = x[i] * cexpf(_Complex_I * 2.0f * (float)M_PI * i * cfo);
@@ -730,7 +730,7 @@ TEST(srslte_cfo_correct_change, srslte_cfo_t srslte_cfo; bzero(&srslte_cfo, size
 
      free(x);
      free(z);
-     srslte_cfo_free(&srslte_cfo);)
+     srsran_cfo_free(&srsran_cfo);)
 
 int main(int argc, char** argv)
 {
@@ -741,7 +741,7 @@ int main(int argc, char** argv)
   uint32_t func_count = 0;
   bool     passed[MAX_FUNCTIONS][MAX_BLOCKS];
   bool     all_passed = true;
-  random_h            = srslte_random_init(0x1234);
+  random_h            = srsran_random_init(0x1234);
 
   if (argc > 1) {
     nof_repetitions = (uint32_t)strtol(argv[1], NULL, 10);
@@ -751,143 +751,143 @@ int main(int argc, char** argv)
     func_count = 0;
 
     passed[func_count][size_count] =
-        test_srslte_vec_xor_bbb(func_names[func_count], &timmings[func_count][size_count], block_size);
+        test_srsran_vec_xor_bbb(func_names[func_count], &timmings[func_count][size_count], block_size);
     func_count++;
 
     passed[func_count][size_count] =
-        test_srslte_vec_acc_ff(func_names[func_count], &timmings[func_count][size_count], block_size);
+        test_srsran_vec_acc_ff(func_names[func_count], &timmings[func_count][size_count], block_size);
     func_count++;
 
     passed[func_count][size_count] =
-        test_srslte_vec_dot_prod_sss(func_names[func_count], &timmings[func_count][size_count], block_size);
+        test_srsran_vec_dot_prod_sss(func_names[func_count], &timmings[func_count][size_count], block_size);
     func_count++;
 
     passed[func_count][size_count] =
-        test_srslte_vec_sum_sss(func_names[func_count], &timmings[func_count][size_count], block_size);
+        test_srsran_vec_sum_sss(func_names[func_count], &timmings[func_count][size_count], block_size);
     func_count++;
 
     passed[func_count][size_count] =
-        test_srslte_vec_sub_sss(func_names[func_count], &timmings[func_count][size_count], block_size);
+        test_srsran_vec_sub_sss(func_names[func_count], &timmings[func_count][size_count], block_size);
     func_count++;
 
     passed[func_count][size_count] =
-        test_srslte_vec_prod_sss(func_names[func_count], &timmings[func_count][size_count], block_size);
+        test_srsran_vec_prod_sss(func_names[func_count], &timmings[func_count][size_count], block_size);
     func_count++;
 
     passed[func_count][size_count] =
-        test_srslte_vec_neg_sss(func_names[func_count], &timmings[func_count][size_count], block_size);
+        test_srsran_vec_neg_sss(func_names[func_count], &timmings[func_count][size_count], block_size);
     func_count++;
 
     passed[func_count][size_count] =
-        test_srslte_vec_acc_cc(func_names[func_count], &timmings[func_count][size_count], block_size);
+        test_srsran_vec_acc_cc(func_names[func_count], &timmings[func_count][size_count], block_size);
     func_count++;
 
     passed[func_count][size_count] =
-        test_srslte_vec_sum_fff(func_names[func_count], &timmings[func_count][size_count], block_size);
+        test_srsran_vec_sum_fff(func_names[func_count], &timmings[func_count][size_count], block_size);
     func_count++;
 
     passed[func_count][size_count] =
-        test_srslte_vec_sub_fff(func_names[func_count], &timmings[func_count][size_count], block_size);
+        test_srsran_vec_sub_fff(func_names[func_count], &timmings[func_count][size_count], block_size);
     func_count++;
 
     passed[func_count][size_count] =
-        test_srslte_vec_dot_prod_ccc(func_names[func_count], &timmings[func_count][size_count], block_size);
+        test_srsran_vec_dot_prod_ccc(func_names[func_count], &timmings[func_count][size_count], block_size);
     func_count++;
 
     passed[func_count][size_count] =
-        test_srslte_vec_dot_prod_conj_ccc(func_names[func_count], &timmings[func_count][size_count], block_size);
+        test_srsran_vec_dot_prod_conj_ccc(func_names[func_count], &timmings[func_count][size_count], block_size);
     func_count++;
 
     passed[func_count][size_count] =
-        test_srslte_vec_convert_fi(func_names[func_count], &timmings[func_count][size_count], block_size);
+        test_srsran_vec_convert_fi(func_names[func_count], &timmings[func_count][size_count], block_size);
     func_count++;
 
     passed[func_count][size_count] =
-        test_srslte_vec_convert_if(func_names[func_count], &timmings[func_count][size_count], block_size);
+        test_srsran_vec_convert_if(func_names[func_count], &timmings[func_count][size_count], block_size);
     func_count++;
 
     passed[func_count][size_count] =
-        test_srslte_vec_prod_fff(func_names[func_count], &timmings[func_count][size_count], block_size);
+        test_srsran_vec_prod_fff(func_names[func_count], &timmings[func_count][size_count], block_size);
     func_count++;
 
     passed[func_count][size_count] =
-        test_srslte_vec_prod_cfc(func_names[func_count], &timmings[func_count][size_count], block_size);
+        test_srsran_vec_prod_cfc(func_names[func_count], &timmings[func_count][size_count], block_size);
     func_count++;
 
     passed[func_count][size_count] =
-        test_srslte_vec_prod_ccc(func_names[func_count], &timmings[func_count][size_count], block_size);
+        test_srsran_vec_prod_ccc(func_names[func_count], &timmings[func_count][size_count], block_size);
     func_count++;
 
     passed[func_count][size_count] =
-        test_srslte_vec_prod_ccc_split(func_names[func_count], &timmings[func_count][size_count], block_size);
+        test_srsran_vec_prod_ccc_split(func_names[func_count], &timmings[func_count][size_count], block_size);
     func_count++;
 
     passed[func_count][size_count] =
-        test_srslte_vec_prod_conj_ccc(func_names[func_count], &timmings[func_count][size_count], block_size);
+        test_srsran_vec_prod_conj_ccc(func_names[func_count], &timmings[func_count][size_count], block_size);
     func_count++;
 
     passed[func_count][size_count] =
-        test_srslte_vec_sc_prod_ccc(func_names[func_count], &timmings[func_count][size_count], block_size);
+        test_srsran_vec_sc_prod_ccc(func_names[func_count], &timmings[func_count][size_count], block_size);
     func_count++;
 
     passed[func_count][size_count] =
-        test_srslte_vec_sc_prod_fff(func_names[func_count], &timmings[func_count][size_count], block_size);
+        test_srsran_vec_sc_prod_fff(func_names[func_count], &timmings[func_count][size_count], block_size);
     func_count++;
 
     passed[func_count][size_count] =
-        test_srslte_vec_abs_cf(func_names[func_count], &timmings[func_count][size_count], block_size);
+        test_srsran_vec_abs_cf(func_names[func_count], &timmings[func_count][size_count], block_size);
     func_count++;
 
     passed[func_count][size_count] =
-        test_srslte_vec_abs_square_cf(func_names[func_count], &timmings[func_count][size_count], block_size);
+        test_srsran_vec_abs_square_cf(func_names[func_count], &timmings[func_count][size_count], block_size);
     func_count++;
 
     passed[func_count][size_count] =
-        test_srslte_vec_sc_prod_cfc(func_names[func_count], &timmings[func_count][size_count], block_size);
+        test_srsran_vec_sc_prod_cfc(func_names[func_count], &timmings[func_count][size_count], block_size);
     func_count++;
 
     passed[func_count][size_count] =
-        test_srslte_vec_div_ccc(func_names[func_count], &timmings[func_count][size_count], block_size);
+        test_srsran_vec_div_ccc(func_names[func_count], &timmings[func_count][size_count], block_size);
     func_count++;
 
     passed[func_count][size_count] =
-        test_srslte_vec_div_cfc(func_names[func_count], &timmings[func_count][size_count], block_size);
+        test_srsran_vec_div_cfc(func_names[func_count], &timmings[func_count][size_count], block_size);
     func_count++;
 
     passed[func_count][size_count] =
-        test_srslte_vec_div_fff(func_names[func_count], &timmings[func_count][size_count], block_size);
+        test_srsran_vec_div_fff(func_names[func_count], &timmings[func_count][size_count], block_size);
     func_count++;
 
     passed[func_count][size_count] =
-        test_srslte_vec_max_fi(func_names[func_count], &timmings[func_count][size_count], block_size);
+        test_srsran_vec_max_fi(func_names[func_count], &timmings[func_count][size_count], block_size);
     func_count++;
 
     passed[func_count][size_count] =
-        test_srslte_vec_max_abs_fi(func_names[func_count], &timmings[func_count][size_count], block_size);
+        test_srsran_vec_max_abs_fi(func_names[func_count], &timmings[func_count][size_count], block_size);
     func_count++;
 
     passed[func_count][size_count] =
-        test_srslte_vec_max_abs_ci(func_names[func_count], &timmings[func_count][size_count], block_size);
+        test_srsran_vec_max_abs_ci(func_names[func_count], &timmings[func_count][size_count], block_size);
     func_count++;
 
     passed[func_count][size_count] =
-        test_srslte_vec_apply_cfo(func_names[func_count], &timmings[func_count][size_count], block_size);
+        test_srsran_vec_apply_cfo(func_names[func_count], &timmings[func_count][size_count], block_size);
     func_count++;
 
     passed[func_count][size_count] =
-        test_srslte_vec_gen_sine(func_names[func_count], &timmings[func_count][size_count], block_size);
+        test_srsran_vec_gen_sine(func_names[func_count], &timmings[func_count][size_count], block_size);
     func_count++;
 
     passed[func_count][size_count] =
-        test_srslte_vec_estimate_frequency(func_names[func_count], &timmings[func_count][size_count], block_size);
+        test_srsran_vec_estimate_frequency(func_names[func_count], &timmings[func_count][size_count], block_size);
     func_count++;
 
     passed[func_count][size_count] =
-        test_srslte_cfo_correct(func_names[func_count], &timmings[func_count][size_count], block_size);
+        test_srsran_cfo_correct(func_names[func_count], &timmings[func_count][size_count], block_size);
     func_count++;
 
     passed[func_count][size_count] =
-        test_srslte_cfo_correct_change(func_names[func_count], &timmings[func_count][size_count], block_size);
+        test_srsran_cfo_correct_change(func_names[func_count], &timmings[func_count][size_count], block_size);
     func_count++;
 
     sizes[size_count] = block_size;
@@ -950,7 +950,7 @@ int main(int argc, char** argv)
 
   if (f)
     fclose(f);
-  srslte_random_free(random_h);
+  srsran_random_free(random_h);
 
-  return (all_passed) ? SRSLTE_SUCCESS : SRSLTE_ERROR;
+  return (all_passed) ? SRSRAN_SUCCESS : SRSRAN_ERROR;
 }

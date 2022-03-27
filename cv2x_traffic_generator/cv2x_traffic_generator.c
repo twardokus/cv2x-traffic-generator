@@ -32,14 +32,14 @@
 /*
  * Copyright 2013-2020 Software Radio Systems Limited
  *
- * This file is part of srsLTE.
+ * This file is part of srsRAN.
  *
- * srsLTE is free software: you can redistribute it and/or modify
+ * srsRAN is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
  * published by the Free Software Foundation, either version 3 of
  * the License, or (at your option) any later version.
  *
- * srsLTE is distributed in the hope that it will be useful,
+ * srsRAN is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Affero General Public License for more details.
@@ -59,22 +59,22 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#include "srslte/phy/common/phy_common_sl.h"
-#include "srslte/phy/phch/pssch.h"
-#include "srslte/phy/phch/sci.h"
-#include "srslte/phy/rf/rf.h"
-#include "srslte/phy/ue/ue_sync.h"
-#include "srslte/phy/utils/debug.h"
-#include "srslte/phy/utils/random.h"
-#include "srslte/phy/utils/vector.h"
-#include "srslte/phy/ue/ue_sl.h"
+#include "srsran/phy/common/phy_common_sl.h"
+#include "srsran/phy/phch/pssch.h"
+#include "srsran/phy/phch/sci.h"
+#include "srsran/phy/rf/rf.h"
+#include "srsran/phy/ue/ue_sync.h"
+#include "srsran/phy/utils/debug.h"
+#include "srsran/phy/utils/random.h"
+#include "srsran/phy/utils/vector.h"
+#include "srsran/phy/ue/ue_sl.h"
 
 
 #define REP_INTERVL 100
 
 bool keep_running = true;
 bool debug_log = false;
-srslte_cell_sl_t cell_sl = {.nof_prb = 50, .tm = SRSLTE_SIDELINK_TM4, .cp = SRSLTE_CP_NORM, .N_sl_id = 19};
+srsran_cell_sl_t cell_sl = {.nof_prb = 50, .tm = SRSRAN_SIDELINK_TM4, .cp = SRSRAN_CP_NORM, .N_sl_id = 19};
 
 typedef struct {
   bool   use_standard_lte_rates;
@@ -98,7 +98,7 @@ typedef struct {
 } sf_config_t;
 
 typedef struct {
-  char sci_msg[SRSLTE_SCI_MSG_MAX_LEN];
+  char sci_msg[SRSRAN_SCI_MSG_MAX_LEN];
   uint32_t pssch_prb_start_idx;
   uint32_t pssch_nof_prb;
   uint32_t pssch_N_x_id;
@@ -206,7 +206,7 @@ void parse_args(prog_args_t* args, int argc, char** argv)
         exit(-1);
     }
   }
-  if (SRSLTE_CP_ISEXT(cell_sl.cp) && cell_sl.tm >= SRSLTE_SIDELINK_TM3) {
+  if (SRSRAN_CP_ISEXT(cell_sl.cp) && cell_sl.tm >= SRSRAN_SIDELINK_TM3) {
     ERROR("Selected TM does not support extended CP");
     usage(args, argv[0]);
     exit(-1);
@@ -249,9 +249,9 @@ void parse_input_file(char* filename, sf_config_t sf_config[REP_INTERVL], uint32
   fclose(input_file);
 }
 
-void write_tx_metrics(srslte_ue_sl_t* srsue_vue_sl, tx_metrics_t* tx_metrics, uint32_t sf_idx)
+void write_tx_metrics(srsran_ue_sl_t* srsue_vue_sl, tx_metrics_t* tx_metrics, uint32_t sf_idx)
 {
-  srslte_sci_info(&srsue_vue_sl->sci_tx, tx_metrics->sci_msg, sizeof(tx_metrics->sci_msg));
+  srsran_sci_info(&srsue_vue_sl->sci_tx, tx_metrics->sci_msg, sizeof(tx_metrics->sci_msg));
 
   tx_metrics->pssch_prb_start_idx = srsue_vue_sl->pssch_tx.pssch_cfg.prb_start_idx;
   tx_metrics->pssch_nof_prb = srsue_vue_sl->pssch_tx.pssch_cfg.nof_prb;
@@ -274,24 +274,24 @@ void print_tx_metrics(tx_metrics_t* tx_metrics)
   fflush(stdout);
 }
 
-void get_start_time(srslte_rf_t* rf, srslte_timestamp_t* t)
+void get_start_time(srsran_rf_t* rf, srsran_timestamp_t* t)
 {
   uint32_t start_time_full_ms;
   double   start_time_frac_ms;
 
-  srslte_rf_get_time(rf, &t->full_secs, &t->frac_secs);
+  srsran_rf_get_time(rf, &t->full_secs, &t->frac_secs);
 
-  fprintf(stdout, "start time: %f\n", srslte_timestamp_real(t));
+  fprintf(stdout, "start time: %f\n", srsran_timestamp_real(t));
   fflush(stdout);
 
   // make sure the fractional transmit time is ms-aligned
   start_time_full_ms = floor(t->frac_secs * 1e3);
   start_time_frac_ms = t->frac_secs - (start_time_full_ms / 1e3);
   if (start_time_frac_ms > 0.0) {
-    srslte_timestamp_sub(t, 0, start_time_frac_ms);
+    srsran_timestamp_sub(t, 0, start_time_frac_ms);
   }
   // Add computing-time offset
-  srslte_timestamp_add(t, 0, 3 * 1e-3);
+  srsran_timestamp_add(t, 0, 3 * 1e-3);
 }
 
 
@@ -364,34 +364,34 @@ int main(int argc, char** argv)
     }
   }
 
-  srslte_use_standard_symbol_size(prog_args.use_standard_lte_rates);
+  srsran_use_standard_symbol_size(prog_args.use_standard_lte_rates);
 
-  srslte_sl_comm_resource_pool_t sl_comm_resource_pool;
+  srsran_sl_comm_resource_pool_t sl_comm_resource_pool;
 
   // init resource pool
-  if (srslte_sl_comm_resource_pool_set_cfg(&sl_comm_resource_pool, cell_sl, prog_args.num_sub_channel, 0, true) != SRSLTE_SUCCESS) {
+  if (srsran_sl_comm_resource_pool_set_cfg(&sl_comm_resource_pool, cell_sl, prog_args.num_sub_channel, 0, true) != SRSRAN_SUCCESS) {
     ERROR("Error initializing sl_comm_resource_pool\n");
-    return SRSLTE_ERROR;
+    return SRSRAN_ERROR;
   }
 
-  srslte_rf_t radio;
+  srsran_rf_t radio;
   fprintf(stdout, "Opening RF device...\n");
   fflush(stdout);
-  if (srslte_rf_open(&radio, prog_args.rf_args)) {
+  if (srsran_rf_open(&radio, prog_args.rf_args)) {
     ERROR("Error opening rf\n");
     exit(-1);
   }
 
   fprintf(stdout, "Set TX freq: %.6f MHz\n",
-         srslte_rf_set_tx_freq(&radio, 0, prog_args.rf_freq) / 1e6);
-  fprintf(stdout, "Set TX gain: %.1f dB\n", srslte_rf_set_tx_gain(&radio, prog_args.rf_gain));
+         srsran_rf_set_tx_freq(&radio, 0, prog_args.rf_freq) / 1e6);
+  fprintf(stdout, "Set TX gain: %.1f dB\n", srsran_rf_set_tx_gain(&radio, prog_args.rf_gain));
   fflush(stdout);
 
-  int srate = srslte_sampling_freq_hz(cell_sl.nof_prb);
+  int srate = srsran_sampling_freq_hz(cell_sl.nof_prb);
   if (srate != -1) {
     fprintf(stdout, "Setting sampling rate %.2f MHz\n", (float)srate / 1000000);
     fflush(stdout);
-    float srate_rf = srslte_rf_set_tx_srate(&radio, (double)srate);
+    float srate_rf = srsran_rf_set_tx_srate(&radio, (double)srate);
     if (srate_rf != srate) {
       ERROR("Could not set sampling rate\n");
       exit(-1);
@@ -402,26 +402,26 @@ int main(int argc, char** argv)
   }
   sleep(1);
 
-  srslte_ue_sl_t srsue_vue_sl;
-  srslte_ue_sl_init(&srsue_vue_sl, cell_sl, sl_comm_resource_pool, 0);
+  srsran_ue_sl_t srsue_vue_sl;
+  srsran_ue_sl_init(&srsue_vue_sl, cell_sl, sl_comm_resource_pool, 0);
 
   /***** prepare TX data *******/
-  srslte_set_sci(&srsue_vue_sl.sci_tx, 1, REP_INTERVL, 0, false, 0, 4);
+  srsran_set_sci(&srsue_vue_sl.sci_tx, 1, REP_INTERVL, 0, false, 0, 4);
 
   // Randomize tx data to fill the transport block
   // Transport block buffer
-  uint8_t tb[SRSLTE_SL_SCH_MAX_TB_LEN] = {};
+  uint8_t tb[SRSRAN_SL_SCH_MAX_TB_LEN] = {};
   struct timeval tv;
   gettimeofday(&tv, NULL);
-  srslte_random_t random_gen = srslte_random_init(tv.tv_usec);
+  srsran_random_t random_gen = srsran_random_init(tv.tv_usec);
   for (int i = 0; i < srsue_vue_sl.pssch_tx.sl_sch_tb_len; i++) {
-    tb[i] = srslte_random_uniform_int_dist(random_gen, 0, 1);
+    tb[i] = srsran_random_uniform_int_dist(random_gen, 0, 1);
   }
 
-  srslte_pssch_data_t data;
+  srsran_pssch_data_t data;
   data.ptr = tb;
 
-  srslte_sl_sf_cfg_t sf;
+  srsran_sl_sf_cfg_t sf;
   cf_t* signal_buffer_tx[REP_INTERVL] = {};
 
   fprintf(stdout, "creating signal buffers...\n");
@@ -433,7 +433,7 @@ int main(int argc, char** argv)
         fprintf(stdout, "signal_buffer %d\n", sf_idx);
         fflush(stdout);
       }
-      signal_buffer_tx[sf_idx] = srslte_vec_cf_malloc(srsue_vue_sl.sf_len);
+      signal_buffer_tx[sf_idx] = srsran_vec_cf_malloc(srsue_vue_sl.sf_len);
       if (!signal_buffer_tx[sf_idx]) {
         perror("malloc");
         exit(-1);
@@ -443,7 +443,7 @@ int main(int argc, char** argv)
       data.l_sub_channel         = sf_config[sf_idx].l_sub_channel;
 
       sf.tti = sf_idx;
-      if (srslte_ue_sl_encode(&srsue_vue_sl, &sf, &data)) {
+      if (srsran_ue_sl_encode(&srsue_vue_sl, &sf, &data)) {
         ERROR("Error encoding sidelink\n");
         exit(-1);
       }
@@ -455,7 +455,7 @@ int main(int argc, char** argv)
   }
 
   /***** timing *******/
-  srslte_timestamp_t start_time, tx_time, now;
+  srsran_timestamp_t start_time, tx_time, now;
 
   get_start_time(&radio, &start_time);
 
@@ -464,15 +464,15 @@ int main(int argc, char** argv)
 
   while (keep_running) {
 
-    srslte_timestamp_copy(&tx_time, &start_time);
-    srslte_timestamp_add(&tx_time, tx_sec_offset, tx_msec_offset * 1e-3);
+    srsran_timestamp_copy(&tx_time, &start_time);
+    srsran_timestamp_add(&tx_time, tx_sec_offset, tx_msec_offset * 1e-3);
 
-    srslte_rf_get_time(&radio, &now.full_secs, &now.frac_secs);
+    srsran_rf_get_time(&radio, &now.full_secs, &now.frac_secs);
 
     // if tx_time is in the past reset time
-    if (srslte_timestamp_uint64(&now, srate) > srslte_timestamp_uint64(&tx_time, srate)) {
+    if (srsran_timestamp_uint64(&now, srate) > srsran_timestamp_uint64(&tx_time, srate)) {
       ERROR("tx_time is in the past (tx_time: %f, now: %f). Setting new start time.\n",
-            srslte_timestamp_real(&tx_time), srslte_timestamp_real(&now));
+            srsran_timestamp_real(&tx_time), srsran_timestamp_real(&now));
       get_start_time(&radio, &start_time);
 
       tx_sec_offset = 0;
@@ -483,7 +483,7 @@ int main(int argc, char** argv)
       // only if data to transmit
       if (sf_config[tx_msec_offset % REP_INTERVL].l_sub_channel > 0) {
 
-        int ret = srslte_rf_send_timed2(&radio,
+        int ret = srsran_rf_send_timed2(&radio,
                                         signal_buffer_tx[tx_msec_offset % REP_INTERVL],
                                         srsue_vue_sl.sf_len,
                                         tx_time.full_secs,
@@ -496,7 +496,7 @@ int main(int argc, char** argv)
 
         // write logfile
         fprintf(logfile,"%lu,%d,%d,%d,%d,%d,%d\n",
-                (uint64_t) round(srslte_timestamp_real(&tx_time) * 1e6),
+                (uint64_t) round(srsran_timestamp_real(&tx_time) * 1e6),
                 tx_metrics->pssch_prb_start_idx,
                 tx_metrics->pssch_nof_prb,
                 tx_metrics->pssch_N_x_id,
@@ -520,12 +520,12 @@ int main(int argc, char** argv)
 
   fclose(logfile);
 
-  srslte_rf_close(&radio);
-  srslte_ue_sl_free(&srsue_vue_sl);
+  srsran_rf_close(&radio);
+  srsran_ue_sl_free(&srsue_vue_sl);
 
   for (int i = 0; i < REP_INTERVL; i++) {
     free(signal_buffer_tx[i]);
   }
 
-  return SRSLTE_SUCCESS;
+  return SRSRAN_SUCCESS;
 }

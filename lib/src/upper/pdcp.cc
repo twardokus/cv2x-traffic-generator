@@ -1,14 +1,14 @@
 /*
  * Copyright 2013-2020 Software Radio Systems Limited
  *
- * This file is part of srsLTE.
+ * This file is part of srsRAN.
  *
- * srsLTE is free software: you can redistribute it and/or modify
+ * srsRAN is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
  * published by the Free Software Foundation, either version 3 of
  * the License, or (at your option) any later version.
  *
- * srsLTE is distributed in the hope that it will be useful,
+ * srsRAN is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Affero General Public License for more details.
@@ -19,11 +19,11 @@
  *
  */
 
-#include "srslte/upper/pdcp.h"
+#include "srsran/upper/pdcp.h"
 
-namespace srslte {
+namespace srsran {
 
-pdcp::pdcp(srslte::task_handler_interface* task_executor_, const char* logname) :
+pdcp::pdcp(srsran::task_handler_interface* task_executor_, const char* logname) :
   task_executor(task_executor_),
   pdcp_log(logname)
 {
@@ -200,21 +200,21 @@ void pdcp::config_security_all(as_security_config_t sec_cfg)
   }
 }
 
-void pdcp::enable_integrity(uint32_t lcid, srslte_direction_t direction)
+void pdcp::enable_integrity(uint32_t lcid, srsran_direction_t direction)
 {
   if (valid_lcid(lcid)) {
     pdcp_array.at(lcid)->enable_integrity(direction);
   }
 }
 
-void pdcp::enable_encryption(uint32_t lcid, srslte_direction_t direction)
+void pdcp::enable_encryption(uint32_t lcid, srsran_direction_t direction)
 {
   if (valid_lcid(lcid)) {
     pdcp_array.at(lcid)->enable_encryption(direction);
   }
 }
 
-void pdcp::enable_security_timed(uint32_t lcid, srslte_direction_t direction, uint32_t sn)
+void pdcp::enable_security_timed(uint32_t lcid, srsran_direction_t direction, uint32_t sn)
 {
   if (valid_lcid(lcid)) {
     pdcp_array.at(lcid)->enable_security_timed(direction, sn);
@@ -268,8 +268,8 @@ void pdcp::write_pdu_mch(uint32_t lcid, unique_byte_buffer_t sdu)
 
 bool pdcp::valid_lcid(uint32_t lcid)
 {
-  if (lcid >= SRSLTE_N_RADIO_BEARERS) {
-    pdcp_log->error("Radio bearer id must be in [0:%d] - %d", SRSLTE_N_RADIO_BEARERS, lcid);
+  if (lcid >= SRSRAN_N_RADIO_BEARERS) {
+    pdcp_log->error("Radio bearer id must be in [0:%d] - %d", SRSRAN_N_RADIO_BEARERS, lcid);
     return false;
   }
 
@@ -278,12 +278,12 @@ bool pdcp::valid_lcid(uint32_t lcid)
 
 bool pdcp::valid_mch_lcid(uint32_t lcid)
 {
-  if (lcid >= SRSLTE_N_MCH_LCIDS) {
-    pdcp_log->error("Radio bearer id must be in [0:%d] - %d", SRSLTE_N_RADIO_BEARERS, lcid);
+  if (lcid >= SRSRAN_N_MCH_LCIDS) {
+    pdcp_log->error("Radio bearer id must be in [0:%d] - %d", SRSRAN_N_RADIO_BEARERS, lcid);
     return false;
   }
 
   return pdcp_array_mrb.find(lcid) != pdcp_array_mrb.end();
 }
 
-} // namespace srslte
+} // namespace srsran

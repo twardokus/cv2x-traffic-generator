@@ -1,14 +1,14 @@
 /*
  * Copyright 2013-2020 Software Radio Systems Limited
  *
- * This file is part of srsLTE.
+ * This file is part of srsRAN.
  *
- * srsLTE is free software: you can redistribute it and/or modify
+ * srsRAN is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
  * published by the Free Software Foundation, either version 3 of
  * the License, or (at your option) any later version.
  *
- * srsLTE is distributed in the hope that it will be useful,
+ * srsRAN is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Affero General Public License for more details.
@@ -19,7 +19,7 @@
  *
  */
 
-#include "srslte/phy/phch/prach.h"
+#include "srsran/phy/phch/prach.h"
 
 /******************************************************
  * Reference tables from 3GPP TS 36.211 v10.7.0
@@ -91,7 +91,7 @@ uint32_t prach_zc_roots_format4[138] = {
     47,  92,  48,  91,  49,  90,  50,  89,  51,  88,  52,  87,  53,  86,  54,  85,  55,  84,  56,  83,  57,  82,  58,
     81,  59,  80,  60,  79,  61,  78,  62,  77,  63,  76,  64,  75,  65,  74,  66,  73,  67,  72,  68,  71,  69,  70};
 
-srslte_prach_sf_config_t prach_sf_config[16] = {{1, {1, 0, 0, 0, 0}},
+srsran_prach_sf_config_t prach_sf_config[16] = {{1, {1, 0, 0, 0, 0}},
                                                 {1, {4, 0, 0, 0, 0}},
                                                 {1, {7, 0, 0, 0, 0}},
                                                 {1, {1, 0, 0, 0, 0}},
@@ -108,7 +108,7 @@ srslte_prach_sf_config_t prach_sf_config[16] = {{1, {1, 0, 0, 0, 0}},
                                                 {-1, {0, 0, 0, 0, 0}}, // this means all subframes
                                                 {1, {9, 0, 0, 0, 0}}};
 
-srslte_prach_tdd_loc_table_t prach_tdd_loc_table[64][7] = {
+srsran_prach_tdd_loc_table_t prach_tdd_loc_table[64][7] = {
     {{1, {{0, 1, 0, 2}}},
      {1, {{0, 1, 0, 1}}},
      {1, {{0, 1, 0, 0}}},

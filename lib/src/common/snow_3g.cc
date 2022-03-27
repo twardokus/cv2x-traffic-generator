@@ -10,7 +10,7 @@
  * Document 2: SNOW 3G Specification"
  *------------------------------------------------------------------------*/
 
-#include "srslte/common/snow_3g.h"
+#include "srsran/common/snow_3g.h"
 
 /* LFSR */
 

@@ -34,10 +34,10 @@
                               INCLUDES
 *******************************************************************************/
 
-#include "srslte/common/liblte_security.h"
+#include "srsran/common/liblte_security.h"
 #include "math.h"
-#include "srslte/common/liblte_ssl.h"
-#include "srslte/common/zuc.h"
+#include "srsran/common/liblte_ssl.h"
+#include "srsran/common/zuc.h"
 
 /*******************************************************************************
                               DEFINES

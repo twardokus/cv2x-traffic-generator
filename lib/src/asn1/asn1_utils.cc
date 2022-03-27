@@ -1,14 +1,14 @@
 /*
  * Copyright 2013-2020 Software Radio Systems Limited
  *
- * This file is part of srsLTE.
+ * This file is part of srsRAN.
  *
- * srsLTE is free software: you can redistribute it and/or modify
+ * srsRAN is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
  * published by the Free Software Foundation, either version 3 of
  * the License, or (at your option) any later version.
  *
- * srsLTE is distributed in the hope that it will be useful,
+ * srsRAN is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Affero General Public License for more details.
@@ -19,8 +19,8 @@
  *
  */
 
-#include "srslte/asn1/asn1_utils.h"
-#include "srslte/common/logmap.h"
+#include "srsran/asn1/asn1_utils.h"
+#include "srsran/common/logmap.h"
 #include <cmath>
 #include <stdio.h>
 
@@ -30,22 +30,22 @@ namespace asn1 {
         logging
 ************************/
 
-void vlog_print(srslte::LOG_LEVEL_ENUM log_level, const char* format, va_list args)
+void vlog_print(srsran::LOG_LEVEL_ENUM log_level, const char* format, va_list args)
 {
   char* args_msg = nullptr;
   if (vasprintf(&args_msg, format, args) > 0) {
     switch (log_level) {
-      case srslte::LOG_LEVEL_ERROR:
-        srslte::logmap::get("ASN1")->error("%s", args_msg);
+      case srsran::LOG_LEVEL_ERROR:
+        srsran::logmap::get("ASN1")->error("%s", args_msg);
         break;
-      case srslte::LOG_LEVEL_WARNING:
-        srslte::logmap::get("ASN1")->warning("%s", args_msg);
+      case srsran::LOG_LEVEL_WARNING:
+        srsran::logmap::get("ASN1")->warning("%s", args_msg);
         break;
-      case srslte::LOG_LEVEL_INFO:
-        srslte::logmap::get("ASN1")->info("%s", args_msg);
+      case srsran::LOG_LEVEL_INFO:
+        srsran::logmap::get("ASN1")->info("%s", args_msg);
         break;
-      case srslte::LOG_LEVEL_DEBUG:
-        srslte::logmap::get("ASN1")->debug("%s", args_msg);
+      case srsran::LOG_LEVEL_DEBUG:
+        srsran::logmap::get("ASN1")->debug("%s", args_msg);
       default:
         break;
     }
@@ -59,28 +59,28 @@ void log_error(const char* format, ...)
 {
   va_list args;
   va_start(args, format);
-  vlog_print(srslte::LOG_LEVEL_ERROR, format, args);
+  vlog_print(srsran::LOG_LEVEL_ERROR, format, args);
   va_end(args);
 }
 void log_warning(const char* format, ...)
 {
   va_list args;
   va_start(args, format);
-  vlog_print(srslte::LOG_LEVEL_WARNING, format, args);
+  vlog_print(srsran::LOG_LEVEL_WARNING, format, args);
   va_end(args);
 }
 void log_info(const char* format, ...)
 {
   va_list args;
   va_start(args, format);
-  vlog_print(srslte::LOG_LEVEL_INFO, format, args);
+  vlog_print(srsran::LOG_LEVEL_INFO, format, args);
   va_end(args);
 }
 void log_debug(const char* format, ...)
 {
   va_list args;
   va_start(args, format);
-  vlog_print(srslte::LOG_LEVEL_DEBUG, format, args);
+  vlog_print(srsran::LOG_LEVEL_DEBUG, format, args);
   va_end(args);
 }
 

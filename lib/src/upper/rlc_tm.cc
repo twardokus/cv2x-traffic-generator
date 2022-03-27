@@ -1,14 +1,14 @@
 /*
  * Copyright 2013-2020 Software Radio Systems Limited
  *
- * This file is part of srsLTE.
+ * This file is part of srsRAN.
  *
- * srsLTE is free software: you can redistribute it and/or modify
+ * srsRAN is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
  * published by the Free Software Foundation, either version 3 of
  * the License, or (at your option) any later version.
  *
- * srsLTE is distributed in the hope that it will be useful,
+ * srsRAN is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Affero General Public License for more details.
@@ -19,15 +19,15 @@
  *
  */
 
-#include "srslte/upper/rlc_tm.h"
+#include "srsran/upper/rlc_tm.h"
 
-namespace srslte {
+namespace srsran {
 
-rlc_tm::rlc_tm(srslte::log_ref            log_,
+rlc_tm::rlc_tm(srsran::log_ref            log_,
                uint32_t                   lcid_,
                srsue::pdcp_interface_rlc* pdcp_,
                srsue::rrc_interface_rlc*  rrc_,
-               srslte::timer_handler*     timers_,
+               srsran::timer_handler*     timers_,
                uint32_t                   queue_len_) :
   ul_queue(queue_len_),
   log(log_),
@@ -169,7 +169,7 @@ int rlc_tm::read_pdu(uint8_t* payload, uint32_t nof_bytes)
                   pdu_size,
                   "TX %s, %s PDU, queue size=%d, bytes=%d",
                   rrc->get_rb_name(lcid).c_str(),
-                  srslte::to_string(rlc_mode_t::tm).c_str(),
+                  srsran::to_string(rlc_mode_t::tm).c_str(),
                   ul_queue.size(),
                   ul_queue.size_bytes());
 
@@ -203,4 +203,4 @@ void rlc_tm::write_pdu(uint8_t* payload, uint32_t nof_bytes)
   }
 }
 
-} // namespace srslte
+} // namespace srsran

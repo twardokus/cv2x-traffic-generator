@@ -1,14 +1,14 @@
 /*
  * Copyright 2013-2020 Software Radio Systems Limited
  *
- * This file is part of srsLTE.
+ * This file is part of srsRAN.
  *
- * srsLTE is free software: you can redistribute it and/or modify
+ * srsRAN is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
  * published by the Free Software Foundation, either version 3 of
  * the License, or (at your option) any later version.
  *
- * srsLTE is distributed in the hope that it will be useful,
+ * srsRAN is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Affero General Public License for more details.
@@ -28,7 +28,7 @@
 #include <time.h>
 #include <unistd.h>
 
-#include "srslte/srslte.h"
+#include "srsran/srsran.h"
 
 static uint32_t nof_tx_bits = 0;
 static uint32_t nof_rx_bits = 0;
@@ -73,22 +73,22 @@ int main(int argc, char** argv)
 
   parse_args(argc, argv);
 
-  bits = srslte_vec_u8_malloc(nof_tx_bits);
+  bits = srsran_vec_u8_malloc(nof_tx_bits);
   if (!bits) {
     perror("malloc");
     exit(-1);
   }
-  rm_bits = srslte_vec_u8_malloc(nof_rx_bits);
+  rm_bits = srsran_vec_u8_malloc(nof_rx_bits);
   if (!rm_bits) {
     perror("malloc");
     exit(-1);
   }
-  rm_symbols = srslte_vec_f_malloc(nof_rx_bits);
+  rm_symbols = srsran_vec_f_malloc(nof_rx_bits);
   if (!rm_symbols) {
     perror("malloc");
     exit(-1);
   }
-  unrm_symbols = srslte_vec_f_malloc(nof_tx_bits);
+  unrm_symbols = srsran_vec_f_malloc(nof_tx_bits);
   if (!unrm_symbols) {
     perror("malloc");
     exit(-1);
@@ -98,7 +98,7 @@ int main(int argc, char** argv)
     bits[i] = rand() % 2;
   }
 
-  if (srslte_rm_conv_tx(bits, nof_tx_bits, rm_bits, nof_rx_bits)) {
+  if (srsran_rm_conv_tx(bits, nof_tx_bits, rm_bits, nof_rx_bits)) {
     exit(-1);
   }
 
@@ -106,7 +106,7 @@ int main(int argc, char** argv)
     rm_symbols[i] = rm_bits[i] ? 1 : -1;
   }
 
-  if (srslte_rm_conv_rx(rm_symbols, nof_rx_bits, unrm_symbols, nof_tx_bits)) {
+  if (srsran_rm_conv_rx(rm_symbols, nof_rx_bits, unrm_symbols, nof_tx_bits)) {
     exit(-1);
   }
 

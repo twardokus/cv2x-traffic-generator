@@ -1,14 +1,14 @@
 #
 # Copyright 2013-2020 Software Radio Systems Limited
 #
-# This file is part of srsLTE
+# This file is part of srsRAN
 #
-# srsLTE is free software: you can redistribute it and/or modify
+# srsRAN is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
 # published by the Free Software Foundation, either version 3 of
 # the License, or (at your option) any later version.
 #
-# srsLTE is distributed in the hope that it will be useful,
+# srsRAN is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # GNU Affero General Public License for more details.
@@ -50,13 +50,13 @@ endif(ENABLE_5GNR)
 # Avoid warnings caused by libmbedtls about deprecated functions
 set_source_files_properties(security.cc PROPERTIES COMPILE_FLAGS -Wno-deprecated-declarations)
 
-add_library(srslte_common STATIC ${SOURCES})
-add_custom_target(gen_build_info COMMAND cmake -P ${CMAKE_BINARY_DIR}/SRSLTEbuildinfo.cmake)
-add_dependencies(srslte_common gen_build_info)
+add_library(srsran_common STATIC ${SOURCES})
+add_custom_target(gen_build_info COMMAND cmake -P ${CMAKE_BINARY_DIR}/SRSRANbuildinfo.cmake)
+add_dependencies(srsran_common gen_build_info)
 
 add_executable(arch_select arch_select.cc)
 
-target_include_directories(srslte_common PUBLIC ${SEC_INCLUDE_DIRS})
-target_link_libraries(srslte_common srslte_phy ${SEC_LIBRARIES})
+target_include_directories(srsran_common PUBLIC ${SEC_INCLUDE_DIRS})
+target_link_libraries(srsran_common srsran_phy ${SEC_LIBRARIES})
 
 add_subdirectory(test)

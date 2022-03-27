@@ -1,14 +1,14 @@
 /*
  * Copyright 2013-2020 Software Radio Systems Limited
  *
- * This file is part of srsLTE.
+ * This file is part of srsRAN.
  *
- * srsLTE is free software: you can redistribute it and/or modify
+ * srsRAN is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
  * published by the Free Software Foundation, either version 3 of
  * the License, or (at your option) any later version.
  *
- * srsLTE is distributed in the hope that it will be useful,
+ * srsRAN is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Affero General Public License for more details.
@@ -22,11 +22,11 @@
 #include <math.h>
 #include <strings.h>
 
-#include "srslte/phy/fec/cbsegm.h"
-#include "srslte/phy/fec/turbodecoder_gen.h"
-#include "srslte/phy/utils/debug.h"
+#include "srsran/phy/fec/cbsegm.h"
+#include "srsran/phy/fec/turbodecoder_gen.h"
+#include "srsran/phy/utils/debug.h"
 
-const uint32_t tc_cb_sizes[SRSLTE_NOF_TC_CB_SIZES] = {
+const uint32_t tc_cb_sizes[SRSRAN_NOF_TC_CB_SIZES] = {
     40,   48,   56,   64,   72,   80,   88,   96,   104,  112,  120,  128,  136,  144,  152,  160,  168,  176,  184,
     192,  200,  208,  216,  224,  232,  240,  248,  256,  264,  272,  280,  288,  296,  304,  312,  320,  328,  336,
     344,  352,  360,  368,  376,  384,  392,  400,  408,  416,  424,  432,  440,  448,  456,  464,  472,  480,  488,
@@ -45,37 +45,37 @@ const uint32_t tc_cb_sizes[SRSLTE_NOF_TC_CB_SIZES] = {
  * @param[in] tbs Input Transport Block Size in bits. CRC's will be added to this
  * @return Error code
  */
-int srslte_cbsegm(srslte_cbsegm_t* s, uint32_t tbs)
+int srsran_cbsegm(srsran_cbsegm_t* s, uint32_t tbs)
 {
   uint32_t Bp, B, idx1;
   int      ret;
 
   if (tbs == 0) {
-    bzero(s, sizeof(srslte_cbsegm_t));
-    ret = SRSLTE_SUCCESS;
+    bzero(s, sizeof(srsran_cbsegm_t));
+    ret = SRSRAN_SUCCESS;
   } else {
     B      = tbs + 24;
     s->tbs = tbs;
 
     /* Calculate CB sizes */
-    if (B <= SRSLTE_TCOD_MAX_LEN_CB) {
+    if (B <= SRSRAN_TCOD_MAX_LEN_CB) {
       s->C = 1;
       Bp   = B;
     } else {
-      s->C = (uint32_t)ceilf((float)B / (SRSLTE_TCOD_MAX_LEN_CB - 24));
+      s->C = (uint32_t)ceilf((float)B / (SRSRAN_TCOD_MAX_LEN_CB - 24));
       Bp   = B + 24 * s->C;
     }
-    ret = srslte_cbsegm_cbindex((Bp - 1) / s->C + 1);
-    if (ret != SRSLTE_ERROR) {
+    ret = srsran_cbsegm_cbindex((Bp - 1) / s->C + 1);
+    if (ret != SRSRAN_ERROR) {
       idx1 = (uint32_t)ret;
-      ret  = srslte_cbsegm_cbsize(idx1);
-      if (ret != SRSLTE_ERROR) {
+      ret  = srsran_cbsegm_cbsize(idx1);
+      if (ret != SRSRAN_ERROR) {
         s->K1     = (uint32_t)ret;
         s->K1_idx = idx1;
         if (idx1 > 0) {
-          ret = srslte_cbsegm_cbsize(idx1 - 1);
+          ret = srsran_cbsegm_cbsize(idx1 - 1);
         }
-        if (ret != SRSLTE_ERROR) {
+        if (ret != SRSRAN_ERROR) {
           if (s->C == 1) {
             s->K2     = 0;
             s->K2_idx = 0;
@@ -97,7 +97,7 @@ int srslte_cbsegm(srslte_cbsegm_t* s, uint32_t tbs)
                s->K2,
                s->F,
                Bp);
-          ret = SRSLTE_SUCCESS;
+          ret = SRSRAN_SUCCESS;
         }
       }
     }
@@ -110,15 +110,15 @@ int srslte_cbsegm(srslte_cbsegm_t* s, uint32_t tbs)
  *
  * @return I_TBS or error code
  */
-int srslte_cbsegm_cbindex(uint32_t long_cb)
+int srsran_cbsegm_cbindex(uint32_t long_cb)
 {
   int j = 0;
-  while (j < SRSLTE_NOF_TC_CB_SIZES && tc_cb_sizes[j] < long_cb) {
+  while (j < SRSRAN_NOF_TC_CB_SIZES && tc_cb_sizes[j] < long_cb) {
     j++;
   }
 
-  if (j == SRSLTE_NOF_TC_CB_SIZES) {
-    return SRSLTE_ERROR;
+  if (j == SRSRAN_NOF_TC_CB_SIZES) {
+    return SRSRAN_ERROR;
   } else {
     return j;
   }
@@ -129,12 +129,12 @@ int srslte_cbsegm_cbindex(uint32_t long_cb)
  *
  * @return Code block size in bits or error code
  */
-int srslte_cbsegm_cbsize(uint32_t index)
+int srsran_cbsegm_cbsize(uint32_t index)
 {
-  if (index < SRSLTE_NOF_TC_CB_SIZES) {
+  if (index < SRSRAN_NOF_TC_CB_SIZES) {
     return (int)tc_cb_sizes[index];
   } else {
-    return SRSLTE_ERROR;
+    return SRSRAN_ERROR;
   }
 }
 
@@ -144,9 +144,9 @@ int srslte_cbsegm_cbsize(uint32_t index)
  * @param[in] size Size of code block in bits
  * @return true if Code Block size is allowed
  */
-bool srslte_cbsegm_cbsize_isvalid(uint32_t size)
+bool srsran_cbsegm_cbsize_isvalid(uint32_t size)
 {
-  for (int i = 0; i < SRSLTE_NOF_TC_CB_SIZES; i++) {
+  for (int i = 0; i < SRSRAN_NOF_TC_CB_SIZES; i++) {
     if (tc_cb_sizes[i] == size) {
       return true;
     }

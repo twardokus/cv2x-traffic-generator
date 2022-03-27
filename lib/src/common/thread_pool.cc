@@ -1,14 +1,14 @@
 /*
  * Copyright 2013-2020 Software Radio Systems Limited
  *
- * This file is part of srsLTE.
+ * This file is part of srsRAN.
  *
- * srsLTE is free software: you can redistribute it and/or modify
+ * srsRAN is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
  * published by the Free Software Foundation, either version 3 of
  * the License, or (at your option) any later version.
  *
- * srsLTE is distributed in the hope that it will be useful,
+ * srsRAN is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Affero General Public License for more details.
@@ -19,7 +19,7 @@
  *
  */
 
-#include "srslte/common/thread_pool.h"
+#include "srsran/common/thread_pool.h"
 #include <assert.h>
 #include <chrono>
 #include <stdio.h>
@@ -31,7 +31,7 @@
       printf(fmt, __VA_ARGS__);                                                                                        \
   } while (0)
 
-namespace srslte {
+namespace srsran {
 
 thread_pool::worker::worker() : thread("THREAD_POOL_WORKER") {}
 
@@ -321,7 +321,7 @@ uint32_t task_thread_pool::nof_pending_tasks()
   return pending_tasks.size();
 }
 
-task_thread_pool::worker_t::worker_t(srslte::task_thread_pool* parent_, uint32_t my_id) :
+task_thread_pool::worker_t::worker_t(srsran::task_thread_pool* parent_, uint32_t my_id) :
   parent(parent_),
   thread(std::string("TASKWORKER") + std::to_string(my_id)),
   id_(my_id)
@@ -372,4 +372,4 @@ void task_thread_pool::worker_t::run_thread()
   running = false;
 }
 
-} // namespace srslte
+} // namespace srsran

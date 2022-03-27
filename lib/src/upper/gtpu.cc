@@ -1,14 +1,14 @@
 /*
  * Copyright 2013-2020 Software Radio Systems Limited
  *
- * This file is part of srsLTE.
+ * This file is part of srsRAN.
  *
- * srsLTE is free software: you can redistribute it and/or modify
+ * srsRAN is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
  * published by the Free Software Foundation, either version 3 of
  * the License, or (at your option) any later version.
  *
- * srsLTE is distributed in the hope that it will be useful,
+ * srsRAN is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Affero General Public License for more details.
@@ -19,16 +19,16 @@
  *
  */
 
-#include "srslte/upper/gtpu.h"
-#include "srslte/common/int_helpers.h"
+#include "srsran/upper/gtpu.h"
+#include "srsran/common/int_helpers.h"
 
-namespace srslte {
+namespace srsran {
 
 /****************************************************************************
  * Header pack/unpack helper functions
  * Ref: 3GPP TS 29.281 v10.1.0 Section 5
  ***************************************************************************/
-bool gtpu_write_header(gtpu_header_t* header, srslte::byte_buffer_t* pdu, srslte::log_ref gtpu_log)
+bool gtpu_write_header(gtpu_header_t* header, srsran::byte_buffer_t* pdu, srsran::log_ref gtpu_log)
 {
   // flags
   if (!gtpu_supported_flags_check(header, gtpu_log)) {
@@ -95,7 +95,7 @@ bool gtpu_write_header(gtpu_header_t* header, srslte::byte_buffer_t* pdu, srslte
   return true;
 }
 
-bool gtpu_read_header(srslte::byte_buffer_t* pdu, gtpu_header_t* header, srslte::log_ref gtpu_log)
+bool gtpu_read_header(srsran::byte_buffer_t* pdu, gtpu_header_t* header, srsran::log_ref gtpu_log)
 {
   uint8_t* ptr = pdu->msg;
 
@@ -154,4 +154,4 @@ std::string gtpu_ntoa(uint32_t addr)
   return std::string(tmp_str);
 }
 
-} // namespace srslte
+} // namespace srsran

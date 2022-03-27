@@ -1,14 +1,14 @@
 /*
  * Copyright 2013-2020 Software Radio Systems Limited
  *
- * This file is part of srsLTE.
+ * This file is part of srsRAN.
  *
- * srsLTE is free software: you can redistribute it and/or modify
+ * srsRAN is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
  * published by the Free Software Foundation, either version 3 of
  * the License, or (at your option) any later version.
  *
- * srsLTE is distributed in the hope that it will be useful,
+ * srsRAN is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Affero General Public License for more details.
@@ -19,18 +19,18 @@
  *
  */
 
-#include "srslte/upper/rlc_um_lte.h"
+#include "srsran/upper/rlc_um_lte.h"
 #include <sstream>
 
 #define RX_MOD_BASE(x) (((x)-vr_uh - cfg.um.rx_window_size) % cfg.um.rx_mod)
 
-namespace srslte {
+namespace srsran {
 
-rlc_um_lte::rlc_um_lte(srslte::log_ref            log_,
+rlc_um_lte::rlc_um_lte(srsran::log_ref            log_,
                        uint32_t                   lcid_,
                        srsue::pdcp_interface_rlc* pdcp_,
                        srsue::rrc_interface_rlc*  rrc_,
-                       srslte::timer_handler*     timers_) :
+                       srsran::timer_handler*     timers_) :
   rlc_um_base(log_, lcid_, pdcp_, rrc_, timers_)
 {
 }
@@ -61,10 +61,10 @@ bool rlc_um_lte::configure(const rlc_config_t& cnfg_)
 
   log->info("%s configured in %s: t_reordering=%d ms, rx_sn_field_length=%u bits, tx_sn_field_length=%u bits\n",
             rb_name.c_str(),
-            srslte::to_string(cnfg_.rlc_mode).c_str(),
+            srsran::to_string(cnfg_.rlc_mode).c_str(),
             cfg.um.t_reordering,
-            srslte::to_number(cfg.um.rx_sn_field_length),
-            srslte::to_number(cfg.um.tx_sn_field_length));
+            srsran::to_number(cfg.um.rx_sn_field_length),
+            srsran::to_number(cfg.um.tx_sn_field_length));
 
   rx_enabled = true;
   tx_enabled = true;
@@ -132,7 +132,7 @@ int rlc_um_lte::rlc_um_lte_tx::build_data_pdu(unique_byte_buffer_t pdu, uint8_t*
   uint8_t* pdu_ptr = pdu->msg;
 
   int head_len  = rlc_um_packed_length(&header);
-  int pdu_space = SRSLTE_MIN(nof_bytes, pdu->get_tailroom());
+  int pdu_space = SRSRAN_MIN(nof_bytes, pdu->get_tailroom());
 
   if (pdu_space <= head_len + 1) {
     log->warning("%s Cannot build a PDU - %d bytes available, %d bytes required for header\n",
@@ -160,7 +160,7 @@ int rlc_um_lte::rlc_um_lte_tx::build_data_pdu(unique_byte_buffer_t pdu, uint8_t*
 
       tx_sdu.reset();
     }
-    pdu_space -= SRSLTE_MIN(to_move, pdu->get_tailroom());
+    pdu_space -= SRSRAN_MIN(to_move, pdu->get_tailroom());
     header.fi |= RLC_FI_FIELD_NOT_START_ALIGNED; // First byte does not correspond to first byte of SDU
   }
 
@@ -563,9 +563,9 @@ void rlc_um_lte::rlc_um_lte_rx::reassemble_rx_sdus()
       goto clean_up_rx_window;
     }
 
-    if (rx_sdu->N_bytes < SRSLTE_MAX_BUFFER_SIZE_BYTES &&
-        rx_window[vr_ur].buf->N_bytes < SRSLTE_MAX_BUFFER_SIZE_BYTES &&
-        rx_window[vr_ur].buf->N_bytes + rx_sdu->N_bytes < SRSLTE_MAX_BUFFER_SIZE_BYTES) {
+    if (rx_sdu->N_bytes < SRSRAN_MAX_BUFFER_SIZE_BYTES &&
+        rx_window[vr_ur].buf->N_bytes < SRSRAN_MAX_BUFFER_SIZE_BYTES &&
+        rx_window[vr_ur].buf->N_bytes + rx_sdu->N_bytes < SRSRAN_MAX_BUFFER_SIZE_BYTES) {
       log->info_hex(rx_window[vr_ur].buf->msg,
                     rx_window[vr_ur].buf->N_bytes,
                     "Writing last segment in SDU buffer. Updating vr_ur=%d, vr_ur_in_rx_sdu=%d, Buffer size=%d, "
@@ -805,4 +805,4 @@ bool rlc_um_end_aligned(uint8_t fi)
   return (fi == RLC_FI_FIELD_START_AND_END_ALIGNED || fi == RLC_FI_FIELD_NOT_START_ALIGNED);
 }
 
-} // namespace srslte
+} // namespace srsran

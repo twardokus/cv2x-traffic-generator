@@ -1,14 +1,14 @@
 /*
  * Copyright 2013-2020 Software Radio Systems Limited
  *
- * This file is part of srsLTE.
+ * This file is part of srsRAN.
  *
- * srsLTE is free software: you can redistribute it and/or modify
+ * srsRAN is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
  * published by the Free Software Foundation, either version 3 of
  * the License, or (at your option) any later version.
  *
- * srsLTE is distributed in the hope that it will be useful,
+ * srsRAN is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Affero General Public License for more details.
@@ -19,9 +19,9 @@
  *
  */
 
-#include "srslte/mac/mac_nr_pdu.h"
+#include "srsran/mac/mac_nr_pdu.h"
 
-namespace srslte {
+namespace srsran {
 
 mac_nr_sch_subpdu::mac_nr_sch_subpdu(mac_nr_sch_pdu* parent_) : parent(parent_) {}
 
@@ -51,7 +51,7 @@ bool mac_nr_sch_subpdu::is_var_len_ce()
   return false;
 }
 
-// return length of PDU (or SRSLTE_ERROR otherwise)
+// return length of PDU (or SRSRAN_ERROR otherwise)
 int32_t mac_nr_sch_subpdu::read_subheader(const uint8_t* ptr)
 {
   // Skip R, read F bit and LCID
@@ -79,7 +79,7 @@ int32_t mac_nr_sch_subpdu::read_subheader(const uint8_t* ptr)
     sdu = (uint8_t*)ptr;
   } else {
     fprintf(stderr, "Invalid LCID (%d) in MAC PDU\n", lcid);
-    return SRSLTE_ERROR;
+    return SRSRAN_ERROR;
   }
   return header_length;
 }
@@ -227,7 +227,7 @@ void mac_nr_sch_pdu::unpack(const uint8_t* payload, const uint32_t& len)
   uint32_t offset = 0;
   while (offset < len) {
     mac_nr_sch_subpdu sch_pdu(this);
-    if (sch_pdu.read_subheader(payload + offset) == SRSLTE_ERROR) {
+    if (sch_pdu.read_subheader(payload + offset) == SRSRAN_ERROR) {
       fprintf(stderr, "Error parsing NR MAC PDU (len=%d, offset=%d)\n", len, offset);
       return;
     }
@@ -286,7 +286,7 @@ uint32_t mac_nr_sch_pdu::add_sdu(const uint32_t lcid_, const uint8_t* payload_, 
 
   if (header_size + len_ > remaining_len) {
     printf("Header and SDU exceed space in PDU (%d > %d).\n", header_size + len_, remaining_len);
-    return SRSLTE_ERROR;
+    return SRSRAN_ERROR;
   }
 
   mac_nr_sch_subpdu sch_pdu(this);
@@ -295,7 +295,7 @@ uint32_t mac_nr_sch_pdu::add_sdu(const uint32_t lcid_, const uint8_t* payload_, 
 
   if (length != sch_pdu.get_total_length()) {
     fprintf(stderr, "Error writing subPDU (Length error: %d != %d)\n", length, sch_pdu.get_total_length());
-    return SRSLTE_ERROR;
+    return SRSRAN_ERROR;
   }
 
   // update length and advance payload pointer
@@ -304,7 +304,7 @@ uint32_t mac_nr_sch_pdu::add_sdu(const uint32_t lcid_, const uint8_t* payload_, 
 
   subpdus.push_back(sch_pdu);
 
-  return SRSLTE_SUCCESS;
+  return SRSRAN_SUCCESS;
 }
 
-} // namespace srslte
+} // namespace srsran

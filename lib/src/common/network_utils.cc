@@ -1,14 +1,14 @@
 /*
  * Copyright 2013-2020 Software Radio Systems Limited
  *
- * This file is part of srsLTE.
+ * This file is part of srsRAN.
  *
- * srsLTE is free software: you can redistribute it and/or modify
+ * srsRAN is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
  * published by the Free Software Foundation, either version 3 of
  * the License, or (at your option) any later version.
  *
- * srsLTE is distributed in the hope that it will be useful,
+ * srsRAN is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Affero General Public License for more details.
@@ -19,7 +19,7 @@
  *
  */
 
-#include "srslte/common/network_utils.h"
+#include "srsran/common/network_utils.h"
 
 #include <netinet/sctp.h>
 #include <sys/socket.h>
@@ -30,7 +30,7 @@
 #define rxSockInfo(fmt, ...) log_h->info("%s: " fmt, name.c_str(), ##__VA_ARGS__)
 #define rxSockDebug(fmt, ...) log_h->debug("%s: " fmt, name.c_str(), ##__VA_ARGS__)
 
-namespace srslte {
+namespace srsran {
 
 namespace net_utils {
 
@@ -111,7 +111,7 @@ int open_socket(net_utils::addr_family ip_type, net_utils::socket_type socket_ty
 {
   int fd = socket((int)ip_type, (int)socket_type, (int)protocol);
   if (fd == -1) {
-    srslte::logmap::get("COMMON")->error("Failed to open %s socket.\n", net_utils::protocol_to_string(protocol));
+    srsran::logmap::get("COMMON")->error("Failed to open %s socket.\n", net_utils::protocol_to_string(protocol));
     perror("Could not create socket\n");
     return -1;
   }
@@ -123,7 +123,7 @@ int open_socket(net_utils::addr_family ip_type, net_utils::socket_type socket_ty
     evnts.sctp_data_io_event          = 1;
     evnts.sctp_shutdown_event         = 1;
     if (setsockopt(fd, IPPROTO_SCTP, SCTP_EVENTS, &evnts, sizeof(evnts)) != 0) {
-      srslte::logmap::get("COMMON")->error("Failed to subscribe to SCTP_SHUTDOWN event: %s\n", strerror(errno));
+      srsran::logmap::get("COMMON")->error("Failed to subscribe to SCTP_SHUTDOWN event: %s\n", strerror(errno));
       perror("setsockopt");
     }
   }
@@ -134,12 +134,12 @@ int open_socket(net_utils::addr_family ip_type, net_utils::socket_type socket_ty
 bool bind_addr(int fd, const sockaddr_in& addr_in)
 {
   if (fd < 0) {
-    srslte::logmap::get("COMMON")->error("Trying to bind to a closed socket\n");
+    srsran::logmap::get("COMMON")->error("Trying to bind to a closed socket\n");
     return false;
   }
 
   if (bind(fd, (struct sockaddr*)&addr_in, sizeof(addr_in)) != 0) {
-    srslte::logmap::get("COMMON")->error(
+    srsran::logmap::get("COMMON")->error(
         "Failed to bind on address %s: %s errno %d\n", get_ip(addr_in).c_str(), strerror(errno), errno);
     perror("bind()");
     return false;
@@ -151,7 +151,7 @@ bool bind_addr(int fd, const char* bind_addr_str, int port, sockaddr_in* addr_re
 {
   sockaddr_in addr_tmp{};
   if (not net_utils::set_sockaddr(&addr_tmp, bind_addr_str, port)) {
-    srslte::logmap::get("COMMON")->error("Failed to convert IP address (%s) to sockaddr_in struct\n", bind_addr_str);
+    srsran::logmap::get("COMMON")->error("Failed to convert IP address (%s) to sockaddr_in struct\n", bind_addr_str);
     return false;
   }
   bind_addr(fd, addr_tmp);
@@ -164,19 +164,19 @@ bool bind_addr(int fd, const char* bind_addr_str, int port, sockaddr_in* addr_re
 bool connect_to(int fd, const char* dest_addr_str, int dest_port, sockaddr_in* dest_sockaddr)
 {
   if (fd < 0) {
-    srslte::logmap::get("COMMON")->error("tried to connect to remote address with an invalid socket.\n");
+    srsran::logmap::get("COMMON")->error("tried to connect to remote address with an invalid socket.\n");
     return false;
   }
   sockaddr_in sockaddr_tmp{};
   if (not net_utils::set_sockaddr(&sockaddr_tmp, dest_addr_str, dest_port)) {
-    srslte::logmap::get("COMMON")->error("Error converting IP address (%s) to sockaddr_in structure\n", dest_addr_str);
+    srsran::logmap::get("COMMON")->error("Error converting IP address (%s) to sockaddr_in structure\n", dest_addr_str);
     return false;
   }
   if (dest_sockaddr != nullptr) {
     *dest_sockaddr = sockaddr_tmp;
   }
   if (connect(fd, (const struct sockaddr*)&sockaddr_tmp, sizeof(sockaddr_tmp)) == -1) {
-    srslte::logmap::get("COMMON")->error("Failed to establish socket connection to %s\n", dest_addr_str);
+    srsran::logmap::get("COMMON")->error("Failed to establish socket connection to %s\n", dest_addr_str);
     perror("connect()");
     return false;
   }
@@ -241,7 +241,7 @@ bool socket_handler_t::open_socket(net_utils::addr_family   ip_type,
                                    net_utils::protocol_type protocol)
 {
   if (sockfd >= 0) {
-    srslte::logmap::get("COMMON")->error("Socket is already open.\n");
+    srsran::logmap::get("COMMON")->error("Socket is already open.\n");
     return false;
   }
   sockfd = net_utils::open_socket(ip_type, socket_type, protocol);
@@ -278,7 +278,7 @@ bool sctp_init_server(socket_handler_t* socket, net_utils::socket_type socktype,
   }
   // Listen for connections
   if (listen(socket->fd(), SOMAXCONN) != 0) {
-    srslte::logmap::get("COMMON")->error("Failed to listen to incoming SCTP connections\n");
+    srsran::logmap::get("COMMON")->error("Failed to listen to incoming SCTP connections\n");
     return false;
   }
   return true;
@@ -299,7 +299,7 @@ bool tcp_make_server(socket_handler_t* socket, const char* bind_addr_str, int po
   }
   // Listen for connections
   if (listen(socket->fd(), nof_connections) != 0) {
-    srslte::logmap::get("COMMON")->error("Failed to listen to incoming TCP connections\n");
+    srsran::logmap::get("COMMON")->error("Failed to listen to incoming TCP connections\n");
     return false;
   }
   return true;
@@ -310,7 +310,7 @@ int tcp_accept(socket_handler_t* socket, sockaddr_in* destaddr)
   socklen_t clilen = sizeof(destaddr);
   int       connfd = accept(socket->fd(), (struct sockaddr*)&destaddr, &clilen);
   if (connfd < 0) {
-    srslte::logmap::get("COMMON")->error("Failed to accept connection\n");
+    srsran::logmap::get("COMMON")->error("Failed to accept connection\n");
     perror("accept");
     return -1;
   }
@@ -321,12 +321,12 @@ int tcp_read(int remotefd, void* buf, size_t nbytes)
 {
   int n = ::read(remotefd, buf, nbytes);
   if (n == 0) {
-    srslte::logmap::get("COMMON")->info("TCP connection closed\n");
+    srsran::logmap::get("COMMON")->info("TCP connection closed\n");
     close(remotefd);
     return 0;
   }
   if (n == -1) {
-    srslte::logmap::get("COMMON")->error("Failed to read from TCP socket.");
+    srsran::logmap::get("COMMON")->error("Failed to read from TCP socket.");
     perror("TCP read");
   }
   return n;
@@ -340,7 +340,7 @@ int tcp_send(int remotefd, const void* buf, size_t nbytes)
   while (nbytes_remaining > 0) {
     ssize_t i = ::send(remotefd, ptr, nbytes_remaining, 0);
     if (i < 1) {
-      srslte::logmap::get("COMMON")->error("Failed to send data to TCP socket\n");
+      srsran::logmap::get("COMMON")->error("Failed to send data to TCP socket\n");
       perror("Error calling send()\n");
       return i;
     }
@@ -363,8 +363,8 @@ int tcp_send(int remotefd, const void* buf, size_t nbytes)
 class recvfrom_pdu_task final : public rx_multisocket_handler::recv_task
 {
 public:
-  using callback_t = std::function<void(srslte::unique_byte_buffer_t pdu, const sockaddr_in& from)>;
-  explicit recvfrom_pdu_task(srslte::byte_buffer_pool* pool_, srslte::log_ref log_, callback_t func_) :
+  using callback_t = std::function<void(srsran::unique_byte_buffer_t pdu, const sockaddr_in& from)>;
+  explicit recvfrom_pdu_task(srsran::byte_buffer_pool* pool_, srsran::log_ref log_, callback_t func_) :
     pool(pool_),
     log_h(log_),
     func(std::move(func_))
@@ -373,7 +373,7 @@ public:
 
   bool operator()(int fd) override
   {
-    srslte::unique_byte_buffer_t pdu     = srslte::allocate_unique_buffer(*pool, "Rxsocket", true);
+    srsran::unique_byte_buffer_t pdu     = srsran::allocate_unique_buffer(*pool, "Rxsocket", true);
     sockaddr_in                  from    = {};
     socklen_t                    fromlen = sizeof(from);
 
@@ -393,8 +393,8 @@ public:
   }
 
 private:
-  srslte::byte_buffer_pool* pool = nullptr;
-  srslte::log_ref           log_h;
+  srsran::byte_buffer_pool* pool = nullptr;
+  srsran::log_ref           log_h;
   callback_t                func;
 };
 
@@ -402,8 +402,8 @@ class sctp_recvmsg_pdu_task final : public rx_multisocket_handler::recv_task
 {
 public:
   using callback_t = std::function<
-      void(srslte::unique_byte_buffer_t pdu, const sockaddr_in& from, const sctp_sndrcvinfo& sri, int flags)>;
-  explicit sctp_recvmsg_pdu_task(srslte::byte_buffer_pool* pool_, srslte::log_ref log_, callback_t func_) :
+      void(srsran::unique_byte_buffer_t pdu, const sockaddr_in& from, const sctp_sndrcvinfo& sri, int flags)>;
+  explicit sctp_recvmsg_pdu_task(srsran::byte_buffer_pool* pool_, srsran::log_ref log_, callback_t func_) :
     pool(pool_),
     log_h(log_),
     func(std::move(func_))
@@ -413,7 +413,7 @@ public:
   bool operator()(int fd) override
   {
     // inside rx_sockets thread. Read socket
-    srslte::unique_byte_buffer_t pdu     = srslte::allocate_unique_buffer(*pool, "Rxsocket", true);
+    srsran::unique_byte_buffer_t pdu     = srsran::allocate_unique_buffer(*pool, "Rxsocket", true);
     sockaddr_in                  from    = {};
     socklen_t                    fromlen = sizeof(from);
     sctp_sndrcvinfo              sri     = {};
@@ -443,8 +443,8 @@ public:
   }
 
 private:
-  srslte::byte_buffer_pool* pool = nullptr;
-  srslte::log_ref           log_h;
+  srsran::byte_buffer_pool* pool = nullptr;
+  srsran::log_ref           log_h;
   callback_t                func;
 };
 
@@ -452,12 +452,12 @@ private:
  *                 Rx Multisocket Handler
  **************************************************************/
 
-rx_multisocket_handler::rx_multisocket_handler(std::string name_, srslte::log_ref log_, int thread_prio) :
+rx_multisocket_handler::rx_multisocket_handler(std::string name_, srsran::log_ref log_, int thread_prio) :
   thread(name_),
   name(std::move(name_)),
   log_h(log_)
 {
-  pool = srslte::byte_buffer_pool::get_instance();
+  pool = srsran::byte_buffer_pool::get_instance();
   // register control pipe fd
   if (pipe(pipefd) == -1) {
     rxSockInfo("Failed to open control pipe\n");
@@ -501,8 +501,8 @@ void rx_multisocket_handler::stop()
  */
 bool rx_multisocket_handler::add_socket_pdu_handler(int fd, recvfrom_callback_t pdu_task)
 {
-  std::unique_ptr<srslte::rx_multisocket_handler::recv_task> task;
-  task.reset(new srslte::recvfrom_pdu_task(pool, log_h, std::move(pdu_task)));
+  std::unique_ptr<srsran::rx_multisocket_handler::recv_task> task;
+  task.reset(new srsran::recvfrom_pdu_task(pool, log_h, std::move(pdu_task)));
   return add_socket_handler(fd, std::move(task));
 }
 
@@ -511,8 +511,8 @@ bool rx_multisocket_handler::add_socket_pdu_handler(int fd, recvfrom_callback_t 
  */
 bool rx_multisocket_handler::add_socket_sctp_pdu_handler(int fd, sctp_recv_callback_t pdu_task)
 {
-  srslte::rx_multisocket_handler::task_callback_t task;
-  task.reset(new srslte::sctp_recvmsg_pdu_task(pool, log_h, std::move(pdu_task)));
+  srsran::rx_multisocket_handler::task_callback_t task;
+  task.reset(new srsran::sctp_recvmsg_pdu_task(pool, log_h, std::move(pdu_task)));
   return add_socket_handler(fd, std::move(task));
 }
 
@@ -648,4 +648,4 @@ void rx_multisocket_handler::run_thread()
   }
 }
 
-} // namespace srslte
+} // namespace srsran

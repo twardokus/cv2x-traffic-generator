@@ -1,14 +1,14 @@
 /*
  * Copyright 2013-2020 Software Radio Systems Limited
  *
- * This file is part of srsLTE.
+ * This file is part of srsRAN.
  *
- * srsLTE is free software: you can redistribute it and/or modify
+ * srsRAN is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
  * published by the Free Software Foundation, either version 3 of
  * the License, or (at your option) any later version.
  *
- * srsLTE is distributed in the hope that it will be useful,
+ * srsRAN is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Affero General Public License for more details.
@@ -19,15 +19,15 @@
  *
  */
 
-#include "srslte/common/logmap.h"
-#include "srslte/common/log_filter.h"
-#include "srslte/common/logger_stdout.h"
+#include "srsran/common/logmap.h"
+#include "srsran/common/log_filter.h"
+#include "srsran/common/logger_stdout.h"
 
-using namespace srslte;
+using namespace srsran;
 
 log_ref::log_ref(const char* name)
 {
-  ptr_ = srslte::logmap::get(name).ptr_;
+  ptr_ = srsran::logmap::get(name).ptr_;
 }
 
 logmap::logmap() : logger_stdout_val(new logger_stdout{})
@@ -37,7 +37,7 @@ logmap::logmap() : logger_stdout_val(new logger_stdout{})
 
 // Access to log map by servicename. If servicename does not exist, create a new log_filter with default cfg
 // Access to the map is protected by a mutex
-log_ref SRSLTE_EXPORT logmap::get(std::string servicename)
+log_ref SRSRAN_EXPORT logmap::get(std::string servicename)
 {
   logmap* pool = get_instance();
   // strip trailing white spaces
@@ -49,7 +49,7 @@ log_ref SRSLTE_EXPORT logmap::get(std::string servicename)
 }
 
 // register manually created log
-void SRSLTE_EXPORT logmap::register_log(std::unique_ptr<log> log_ptr)
+void SRSRAN_EXPORT logmap::register_log(std::unique_ptr<log> log_ptr)
 {
   logmap*                     pool = get_instance();
   std::lock_guard<std::mutex> lock(pool->mutex);
@@ -58,10 +58,10 @@ void SRSLTE_EXPORT logmap::register_log(std::unique_ptr<log> log_ptr)
   }
 }
 
-std::unique_ptr<srslte::log> SRSLTE_EXPORT logmap::deregister_log(const std::string& servicename)
+std::unique_ptr<srsran::log> SRSRAN_EXPORT logmap::deregister_log(const std::string& servicename)
 {
   logmap*                      pool = get_instance();
-  std::unique_ptr<srslte::log> ret;
+  std::unique_ptr<srsran::log> ret;
   std::lock_guard<std::mutex>  lock(pool->mutex);
   auto                         it = pool->log_map.find(servicename);
   if (it != pool->log_map.end()) {
@@ -72,7 +72,7 @@ std::unique_ptr<srslte::log> SRSLTE_EXPORT logmap::deregister_log(const std::str
 }
 
 // set default logger
-void SRSLTE_EXPORT logmap::set_default_logger(logger* logger_)
+void SRSRAN_EXPORT logmap::set_default_logger(logger* logger_)
 {
   logmap*                     pool = get_instance();
   std::lock_guard<std::mutex> lock(pool->mutex);
@@ -80,7 +80,7 @@ void SRSLTE_EXPORT logmap::set_default_logger(logger* logger_)
 }
 
 // set default log level
-void SRSLTE_EXPORT logmap::set_default_log_level(LOG_LEVEL_ENUM l)
+void SRSRAN_EXPORT logmap::set_default_log_level(LOG_LEVEL_ENUM l)
 {
   logmap*                     pool = get_instance();
   std::lock_guard<std::mutex> lock(pool->mutex);
@@ -88,7 +88,7 @@ void SRSLTE_EXPORT logmap::set_default_log_level(LOG_LEVEL_ENUM l)
 }
 
 // set default hex limit
-void SRSLTE_EXPORT logmap::set_default_hex_limit(int hex_limit)
+void SRSRAN_EXPORT logmap::set_default_hex_limit(int hex_limit)
 {
   logmap*                     pool = get_instance();
   std::lock_guard<std::mutex> lock(pool->mutex);

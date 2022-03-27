@@ -1,14 +1,14 @@
 /*
  * Copyright 2013-2020 Software Radio Systems Limited
  *
- * This file is part of srsLTE.
+ * This file is part of srsRAN.
  *
- * srsLTE is free software: you can redistribute it and/or modify
+ * srsRAN is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
  * published by the Free Software Foundation, either version 3 of
  * the License, or (at your option) any later version.
  *
- * srsLTE is distributed in the hope that it will be useful,
+ * srsRAN is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Affero General Public License for more details.
@@ -27,9 +27,9 @@
 #include <string.h>
 #include <sys/time.h>
 
-#include "srslte/common/log_filter.h"
+#include "srsran/common/log_filter.h"
 
-namespace srslte {
+namespace srsran {
 
 #define CHARS_FOR_HEX_DUMP(size)                                                                                       \
   (3 * size + size / 16 * 20) // 3 chars per byte, plus 20 per line for position and newline)
@@ -75,7 +75,7 @@ void log_filter::init(std::string layer, logger* logger_, bool tti)
   do_tti       = tti;
 }
 
-void log_filter::all_log(srslte::LOG_LEVEL_ENUM level,
+void log_filter::all_log(srsran::LOG_LEVEL_ENUM level,
                          uint32_t               tti,
                          const char*            msg,
                          const uint8_t*         hex,
@@ -238,7 +238,7 @@ void log_filter::now_time(char* buffer, const uint32_t buffer_len)
   tm      timeinfo = {};
   char    us[16];
 
-  srslte_timestamp_t now;
+  srsran_timestamp_t now;
   uint64_t           usec_epoch;
 
   if (buffer_len < 16) {
@@ -291,4 +291,4 @@ std::string log_filter::hex_string(const uint8_t* hex, int size)
   return ss.str();
 }
 
-} // namespace srslte
+} // namespace srsran

@@ -1,14 +1,14 @@
 /*
  * Copyright 2013-2020 Software Radio Systems Limited
  *
- * This file is part of srsLTE.
+ * This file is part of srsRAN.
  *
- * srsLTE is free software: you can redistribute it and/or modify
+ * srsRAN is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
  * published by the Free Software Foundation, either version 3 of
  * the License, or (at your option) any later version.
  *
- * srsLTE is distributed in the hope that it will be useful,
+ * srsRAN is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Affero General Public License for more details.
@@ -26,7 +26,7 @@
 
 #include "rf_helper.h"
 #include "rf_soapy_imp.h"
-#include "srslte/srslte.h"
+#include "srsran/srsran.h"
 
 #include <SoapySDR/Device.h>
 #include <SoapySDR/Formats.h>
@@ -53,13 +53,13 @@ typedef struct {
   SoapySDRStream*  txStream;
   bool             tx_stream_active;
   bool             rx_stream_active;
-  srslte_rf_info_t info;
+  srsran_rf_info_t info;
   double           tx_rate;
   size_t           rx_mtu, tx_mtu;
   size_t           num_rx_channels;
   size_t           num_tx_channels;
 
-  srslte_rf_error_handler_t soapy_error_handler;
+  srsran_rf_error_handler_t soapy_error_handler;
   void*                     soapy_error_handler_arg;
 
   bool      async_thread_running;
@@ -78,9 +78,9 @@ cf_t zero_mem[64 * 1024];
 static void log_overflow(rf_soapy_handler_t* h)
 {
   if (h->soapy_error_handler) {
-    srslte_rf_error_t error;
-    bzero(&error, sizeof(srslte_rf_error_t));
-    error.type = SRSLTE_RF_ERROR_OVERFLOW;
+    srsran_rf_error_t error;
+    bzero(&error, sizeof(srsran_rf_error_t));
+    error.type = SRSRAN_RF_ERROR_OVERFLOW;
     h->soapy_error_handler(h->soapy_error_handler_arg, error);
   } else {
     h->num_overflows++;
@@ -90,10 +90,10 @@ static void log_overflow(rf_soapy_handler_t* h)
 static void log_late(rf_soapy_handler_t* h, bool is_rx)
 {
   if (h->soapy_error_handler) {
-    srslte_rf_error_t error;
-    bzero(&error, sizeof(srslte_rf_error_t));
+    srsran_rf_error_t error;
+    bzero(&error, sizeof(srsran_rf_error_t));
     error.opt  = is_rx ? 1 : 0;
-    error.type = SRSLTE_RF_ERROR_LATE;
+    error.type = SRSRAN_RF_ERROR_LATE;
     h->soapy_error_handler(h->soapy_error_handler_arg, error);
   } else {
     h->num_lates++;
@@ -103,9 +103,9 @@ static void log_late(rf_soapy_handler_t* h, bool is_rx)
 static void log_underflow(rf_soapy_handler_t* h)
 {
   if (h->soapy_error_handler) {
-    srslte_rf_error_t error;
-    bzero(&error, sizeof(srslte_rf_error_t));
-    error.type = SRSLTE_RF_ERROR_UNDERFLOW;
+    srsran_rf_error_t error;
+    bzero(&error, sizeof(srsran_rf_error_t));
+    error.type = SRSRAN_RF_ERROR_UNDERFLOW;
     h->soapy_error_handler(h->soapy_error_handler_arg, error);
   } else {
     h->num_underflows++;
@@ -177,7 +177,7 @@ void rf_soapy_suppress_stdout(void* h)
   // not supported
 }
 
-void rf_soapy_register_error_handler(void* h, srslte_rf_error_handler_t new_handler, void* arg)
+void rf_soapy_register_error_handler(void* h, srsran_rf_error_handler_t new_handler, void* arg)
 {
   rf_soapy_handler_t* handler      = (rf_soapy_handler_t*)h;
   handler->soapy_error_handler     = new_handler;
@@ -215,12 +215,12 @@ int rf_soapy_start_rx_stream(void* h, bool now)
   if (handler->rx_stream_active == false) {
     if (SoapySDRDevice_activateStream(handler->device, handler->rxStream, 0, 0, 0) != 0) {
       printf("Error starting Rx streaming.\n");
-      return SRSLTE_ERROR;
+      return SRSRAN_ERROR;
     }
 
     handler->rx_stream_active = true;
   }
-  return SRSLTE_SUCCESS;
+  return SRSRAN_SUCCESS;
 }
 
 int rf_soapy_start_tx_stream(void* h)
@@ -229,11 +229,11 @@ int rf_soapy_start_tx_stream(void* h)
   if (handler->tx_stream_active == false) {
     if (SoapySDRDevice_activateStream(handler->device, handler->txStream, 0, 0, 0) != 0) {
       printf("Error starting Tx streaming.\n");
-      return SRSLTE_ERROR;
+      return SRSRAN_ERROR;
     }
     handler->tx_stream_active = true;
   }
-  return SRSLTE_SUCCESS;
+  return SRSRAN_SUCCESS;
 }
 
 int rf_soapy_stop_rx_stream(void* h)
@@ -241,11 +241,11 @@ int rf_soapy_stop_rx_stream(void* h)
   rf_soapy_handler_t* handler = (rf_soapy_handler_t*)h;
   if (SoapySDRDevice_deactivateStream(handler->device, handler->rxStream, 0, 0) != 0) {
     printf("Error deactivating Rx streaming.\n");
-    return SRSLTE_ERROR;
+    return SRSRAN_ERROR;
   }
 
   handler->rx_stream_active = false;
-  return SRSLTE_SUCCESS;
+  return SRSRAN_SUCCESS;
 }
 
 int rf_soapy_stop_tx_stream(void* h)
@@ -253,11 +253,11 @@ int rf_soapy_stop_tx_stream(void* h)
   rf_soapy_handler_t* handler = (rf_soapy_handler_t*)h;
   if (SoapySDRDevice_deactivateStream(handler->device, handler->txStream, 0, 0) != 0) {
     printf("Error deactivating Tx streaming.\n");
-    return SRSLTE_ERROR;
+    return SRSRAN_ERROR;
   }
 
   handler->tx_stream_active = false;
-  return SRSLTE_SUCCESS;
+  return SRSRAN_SUCCESS;
 }
 
 void rf_soapy_flush_buffer(void* h)
@@ -291,7 +291,7 @@ int rf_soapy_open_multi(char* args, void** h, uint32_t num_requested_channels)
   if (length == 0) {
     printf("No Soapy devices found.\n");
     SoapySDRKwargsList_clear(soapy_args, length);
-    return SRSLTE_ERROR;
+    return SRSRAN_ERROR;
   }
   char* devname = DEVNAME_NONE;
   for (size_t i = 0; i < length; i++) {
@@ -326,13 +326,13 @@ int rf_soapy_open_multi(char* args, void** h, uint32_t num_requested_channels)
   }
 
   // select last device if dev_id exceeds available devices
-  dev_id = SRSLTE_MIN(dev_id, length - 1);
+  dev_id = SRSRAN_MIN(dev_id, length - 1);
   printf("Selecting Soapy device: %d\n", dev_id);
 
   SoapySDRDevice* sdr = SoapySDRDevice_make(&(soapy_args[dev_id]));
   if (sdr == NULL) {
     printf("Failed to create Soapy object\n");
-    return SRSLTE_ERROR;
+    return SRSRAN_ERROR;
   }
   SoapySDRKwargsList_clear(soapy_args, length);
 
@@ -354,7 +354,7 @@ int rf_soapy_open_multi(char* args, void** h, uint32_t num_requested_channels)
   // Setup Rx streamer
   size_t num_available_channels = SoapySDRDevice_getNumChannels(handler->device, SOAPY_SDR_RX);
   if ((num_available_channels > 0) && (num_requested_channels > 0)) {
-    handler->num_rx_channels = SRSLTE_MIN(num_available_channels, num_requested_channels);
+    handler->num_rx_channels = SRSRAN_MIN(num_available_channels, num_requested_channels);
     size_t rx_channels[handler->num_rx_channels];
     for (int i = 0; i < handler->num_rx_channels; i++) {
       rx_channels[i] = i;
@@ -374,7 +374,7 @@ int rf_soapy_open_multi(char* args, void** h, uint32_t num_requested_channels)
     if (handler->rxStream == NULL) {
 #endif
       printf("Rx setupStream fail: %s\n", SoapySDRDevice_lastError());
-      return SRSLTE_ERROR;
+      return SRSRAN_ERROR;
     }
     handler->rx_mtu = SoapySDRDevice_getStreamMTU(handler->device, handler->rxStream);
   }
@@ -382,7 +382,7 @@ int rf_soapy_open_multi(char* args, void** h, uint32_t num_requested_channels)
   // Setup Tx streamer
   num_available_channels = SoapySDRDevice_getNumChannels(handler->device, SOAPY_SDR_TX);
   if ((num_available_channels > 0) && (num_requested_channels > 0)) {
-    handler->num_tx_channels = SRSLTE_MIN(num_available_channels, num_requested_channels);
+    handler->num_tx_channels = SRSRAN_MIN(num_available_channels, num_requested_channels);
     size_t tx_channels[handler->num_tx_channels];
     for (int i = 0; i < handler->num_tx_channels; i++) {
       tx_channels[i] = i;
@@ -402,7 +402,7 @@ int rf_soapy_open_multi(char* args, void** h, uint32_t num_requested_channels)
     if (handler->txStream == NULL) {
 #endif
       printf("Tx setupStream fail: %s\n", SoapySDRDevice_lastError());
-      return SRSLTE_ERROR;
+      return SRSRAN_ERROR;
     }
     handler->tx_mtu = SoapySDRDevice_getStreamMTU(handler->device, handler->txStream);
   }
@@ -510,8 +510,8 @@ int rf_soapy_open_multi(char* args, void** h, uint32_t num_requested_channels)
     rf_soapy_set_rx_gain(handler, 35);
 
     cf_t  dummy_buffer[1920];
-    cf_t* dummy_buffer_array[SRSLTE_MAX_PORTS];
-    for (int i = 0; i < SRSLTE_MAX_PORTS; i++) {
+    cf_t* dummy_buffer_array[SRSRAN_MAX_PORTS];
+    for (int i = 0; i < SRSRAN_MAX_PORTS; i++) {
       dummy_buffer_array[i] = dummy_buffer;
     }
     rf_soapy_start_rx_stream(handler, true);
@@ -554,7 +554,7 @@ int rf_soapy_open_multi(char* args, void** h, uint32_t num_requested_channels)
   }
 #endif
 
-  return SRSLTE_SUCCESS;
+  return SRSRAN_SUCCESS;
 }
 
 int rf_soapy_open(char* args, void** h)
@@ -599,7 +599,7 @@ int rf_soapy_close(void* h)
 
   free(handler);
 
-  return SRSLTE_SUCCESS;
+  return SRSRAN_SUCCESS;
 }
 
 double rf_soapy_set_rx_srate(void* h, double rate)
@@ -617,7 +617,7 @@ double rf_soapy_set_rx_srate(void* h, double rate)
   for (uint32_t i = 0; i < handler->num_rx_channels; i++) {
     if (SoapySDRDevice_setSampleRate(handler->device, SOAPY_SDR_RX, i, rate) != 0) {
       printf("setSampleRate Rx fail: %s\n", SoapySDRDevice_lastError());
-      return SRSLTE_ERROR;
+      return SRSRAN_ERROR;
     }
 
 #if SET_RF_BW
@@ -626,11 +626,11 @@ double rf_soapy_set_rx_srate(void* h, double rate)
     SoapySDRRange* bw_range = SoapySDRDevice_getBandwidthRange(handler->device, SOAPY_SDR_RX, 0, &bw_length);
     for (int k = 0; k < bw_length; ++k) {
       double bw = rate * 0.75;
-      bw        = SRSLTE_MIN(bw, bw_range[k].maximum);
-      bw        = SRSLTE_MAX(bw, bw_range[k].minimum);
+      bw        = SRSRAN_MIN(bw, bw_range[k].maximum);
+      bw        = SRSRAN_MAX(bw, bw_range[k].minimum);
       if (SoapySDRDevice_setBandwidth(handler->device, SOAPY_SDR_RX, i, bw) != 0) {
         printf("setBandwidth fail: %s\n", SoapySDRDevice_lastError());
-        return SRSLTE_ERROR;
+        return SRSRAN_ERROR;
       }
       printf("Set Rx bandwidth to %.2f MHz\n", SoapySDRDevice_getBandwidth(handler->device, SOAPY_SDR_RX, i) / 1e6);
     }
@@ -662,7 +662,7 @@ double rf_soapy_set_tx_srate(void* h, double rate)
   for (uint32_t i = 0; i < handler->num_tx_channels; i++) {
     if (SoapySDRDevice_setSampleRate(handler->device, SOAPY_SDR_TX, i, rate) != 0) {
       printf("setSampleRate Tx fail: %s\n", SoapySDRDevice_lastError());
-      return SRSLTE_ERROR;
+      return SRSRAN_ERROR;
     }
 
 #if SET_RF_BW
@@ -672,11 +672,11 @@ double rf_soapy_set_tx_srate(void* h, double rate)
       // try to set the BW a bit narrower than sampling rate to prevent aliasing but make sure to stay within device
       // boundaries
       double bw = rate * 0.75;
-      bw        = SRSLTE_MAX(bw, bw_range[k].minimum);
-      bw        = SRSLTE_MIN(bw, bw_range[k].maximum);
+      bw        = SRSRAN_MAX(bw, bw_range[k].minimum);
+      bw        = SRSRAN_MIN(bw, bw_range[k].maximum);
       if (SoapySDRDevice_setBandwidth(handler->device, SOAPY_SDR_TX, i, bw) != 0) {
         printf("setBandwidth fail: %s\n", SoapySDRDevice_lastError());
-        return SRSLTE_ERROR;
+        return SRSRAN_ERROR;
       }
       printf("Set Tx bandwidth to %.2f MHz\n", SoapySDRDevice_getBandwidth(handler->device, SOAPY_SDR_TX, i) / 1e6);
     }
@@ -701,7 +701,7 @@ double rf_soapy_set_rx_gain(void* h, double gain)
   for (uint32_t i = 0; i < handler->num_rx_channels; i++) {
     if (SoapySDRDevice_setGain(handler->device, SOAPY_SDR_RX, i, gain) != 0) {
       printf("setGain fail: %s\n", SoapySDRDevice_lastError());
-      return SRSLTE_ERROR;
+      return SRSRAN_ERROR;
     }
   }
   return rf_soapy_get_rx_gain(h);
@@ -713,7 +713,7 @@ double rf_soapy_set_tx_gain(void* h, double gain)
   for (uint32_t i = 0; i < handler->num_tx_channels; i++) {
     if (SoapySDRDevice_setGain(handler->device, SOAPY_SDR_TX, i, gain) != 0) {
       printf("setGain fail: %s\n", SoapySDRDevice_lastError());
-      return SRSLTE_ERROR;
+      return SRSRAN_ERROR;
     }
   }
   return rf_soapy_get_tx_gain(h);
@@ -733,9 +733,9 @@ double rf_soapy_get_tx_gain(void* h)
   return SoapySDRDevice_getGain(handler->device, SOAPY_SDR_TX, 0);
 }
 
-srslte_rf_info_t* rf_soapy_get_info(void* h)
+srsran_rf_info_t* rf_soapy_get_info(void* h)
 {
-  srslte_rf_info_t* info = NULL;
+  srsran_rf_info_t* info = NULL;
   if (h) {
     rf_soapy_handler_t* handler = (rf_soapy_handler_t*)h;
     info                        = &handler->info;
@@ -750,7 +750,7 @@ double rf_soapy_set_rx_freq(void* h, uint32_t ch, double freq)
   for (uint32_t i = 0; i < handler->num_rx_channels; i++) {
     if (SoapySDRDevice_setFrequency(handler->device, SOAPY_SDR_RX, i, freq, NULL) != 0) {
       printf("setFrequency fail: %s\n", SoapySDRDevice_lastError());
-      return SRSLTE_ERROR;
+      return SRSRAN_ERROR;
     }
   }
 
@@ -767,7 +767,7 @@ double rf_soapy_set_tx_freq(void* h, uint32_t ch, double freq)
   for (uint32_t i = 0; i < handler->num_tx_channels; i++) {
     if (SoapySDRDevice_setFrequency(handler->device, SOAPY_SDR_TX, i, freq, NULL) != 0) {
       printf("setFrequency fail: %s\n", SoapySDRDevice_lastError());
-      return SRSLTE_ERROR;
+      return SRSRAN_ERROR;
     }
   }
   return SoapySDRDevice_getFrequency(handler->device, SOAPY_SDR_TX, 0);
@@ -780,7 +780,7 @@ void rf_soapy_get_time(void* h, time_t* secs, double* frac_secs)
 
 // TODO: add multi-channel support
 int rf_soapy_recv_with_time_multi(void*    h,
-                                  void*    data[SRSLTE_MAX_PORTS],
+                                  void*    data[SRSRAN_MAX_PORTS],
                                   uint32_t nsamples,
                                   bool     blocking,
                                   time_t*  secs,
@@ -800,12 +800,12 @@ int rf_soapy_recv_with_time_multi(void*    h,
 #endif
 
   do {
-    size_t rx_samples = SRSLTE_MIN(nsamples - n, handler->rx_mtu);
+    size_t rx_samples = SRSRAN_MIN(nsamples - n, handler->rx_mtu);
 #if PRINT_RX_STATS
     printf(" - rx_samples=%zd\n", rx_samples);
 #endif
 
-    void* buffs_ptr[SRSLTE_MAX_PORTS] = {};
+    void* buffs_ptr[SRSRAN_MAX_PORTS] = {};
     for (int i = 0; i < handler->num_rx_channels; i++) {
       cf_t* data_c = (cf_t*)data[i];
       buffs_ptr[i] = &data_c[n];
@@ -858,14 +858,14 @@ int rf_soapy_send_timed(void*  h,
                         bool   is_start_of_burst,
                         bool   is_end_of_burst)
 {
-  void* _data[SRSLTE_MAX_PORTS] = {data, zero_mem, zero_mem, zero_mem};
+  void* _data[SRSRAN_MAX_PORTS] = {data, zero_mem, zero_mem, zero_mem};
   return rf_soapy_send_timed_multi(
       h, _data, nsamples, secs, frac_secs, has_time_spec, blocking, is_start_of_burst, is_end_of_burst);
 }
 
 // Todo: Check correct handling of flags, use RF metrics API, fix timed transmissions
 int rf_soapy_send_timed_multi(void*  h,
-                              void*  data[SRSLTE_MAX_PORTS],
+                              void*  data[SRSRAN_MAX_PORTS],
                               int    nsamples,
                               time_t secs,
                               double frac_secs,
@@ -898,7 +898,7 @@ int rf_soapy_send_timed_multi(void*  h,
 
   do {
 #if USE_TX_MTU
-    size_t tx_samples = SRSLTE_MIN(nsamples - n, handler->tx_mtu);
+    size_t tx_samples = SRSRAN_MIN(nsamples - n, handler->tx_mtu);
 #else
     size_t tx_samples = nsamples;
     if (tx_samples > nsamples - n) {
@@ -925,7 +925,7 @@ int rf_soapy_send_timed_multi(void*  h,
     printf(" - tx_samples=%zd at timeNs=%llu flags=%d\n", tx_samples, timeNs, flags);
 #endif
 
-    const void* buffs_ptr[SRSLTE_MAX_PORTS] = {};
+    const void* buffs_ptr[SRSRAN_MAX_PORTS] = {};
     for (int i = 0; i < handler->num_tx_channels; i++) {
       cf_t* data_c = data[i] ? data[i] : zero_mem;
       buffs_ptr[i] = &data_c[n];
@@ -973,7 +973,7 @@ int rf_soapy_send_timed_multi(void*  h,
         default:
           ERROR("Error during writeStream\n");
           exit(-1);
-          return SRSLTE_ERROR;
+          return SRSRAN_ERROR;
       }
     }
     trials++;

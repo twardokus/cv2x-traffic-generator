@@ -8,7 +8,7 @@
 
 ---------------------------------------------------------*/
 
-#include "srslte/common/zuc.h"
+#include "srsran/common/zuc.h"
 
 #define MAKEU32(a, b, c, d) (((u32)(a) << 24) | ((u32)(b) << 16) | ((u32)(c) << 8) | ((u32)(d)))
 #define MulByPow2(x, k) ((((x) << k) | ((x) >> (31 - k))) & 0x7FFFFFFF)

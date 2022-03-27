@@ -1,6 +1,6 @@
 # Cellular Vehicle-to-Everything Traffic Generator
 
-An SDR-based C-V2X Traffic Generator based on [srsLTE](https://github.com/srsLTE/srsLTE).
+An SDR-based C-V2X Traffic Generator based on [srsRAN](https://github.com/srsRAN/srsRAN).
 
 ![TU Dortmund University](img/tu-dortmund_small.png "TU Dortmund University")
 ![Communication Networks Institute](img/CNI_small.png "Communication Networks Institute")
@@ -12,7 +12,7 @@ The work on this paper has been partially funded by Deutsche Forschungsgemeinsch
 
 # Installation
 
-The build dependencies are the same as for srsLTE and can be found [here](https://github.com/srsLTE/srsLTE#build-instructions).
+The build dependencies are the same as for srsRAN and can be found [here](https://github.com/srsRAN/srsRAN#build-instructions).
 
 ### Download and build:
 ```

@@ -1,14 +1,14 @@
 /*
  * Copyright 2013-2020 Software Radio Systems Limited
  *
- * This file is part of srsLTE.
+ * This file is part of srsRAN.
  *
- * srsLTE is free software: you can redistribute it and/or modify
+ * srsRAN is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
  * published by the Free Software Foundation, either version 3 of
  * the License, or (at your option) any later version.
  *
- * srsLTE is distributed in the hope that it will be useful,
+ * srsRAN is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Affero General Public License for more details.
@@ -19,13 +19,13 @@
  *
  */
 
-#include "srslte/common/mac_pcap.h"
-#include "srslte/common/pcap.h"
+#include "srsran/common/mac_pcap.h"
+#include "srsran/common/pcap.h"
 
-#include "srslte/srslte.h"
+#include "srsran/srsran.h"
 #include <stdint.h>
 
-namespace srslte {
+namespace srsran {
 
 mac_pcap::mac_pcap() : enable_write(false), ue_id(0), pcap_file(nullptr) {}
 
@@ -131,15 +131,15 @@ void mac_pcap::write_dl_bch(uint8_t* pdu, uint32_t pdu_len_bytes, bool crc_ok, u
 }
 void mac_pcap::write_dl_pch(uint8_t* pdu, uint32_t pdu_len_bytes, bool crc_ok, uint32_t tti, uint8_t cc_idx)
 {
-  pack_and_write(pdu, pdu_len_bytes, 0, crc_ok, cc_idx, tti, SRSLTE_PRNTI, DIRECTION_DOWNLINK, P_RNTI);
+  pack_and_write(pdu, pdu_len_bytes, 0, crc_ok, cc_idx, tti, SRSRAN_PRNTI, DIRECTION_DOWNLINK, P_RNTI);
 }
 void mac_pcap::write_dl_mch(uint8_t* pdu, uint32_t pdu_len_bytes, bool crc_ok, uint32_t tti, uint8_t cc_idx)
 {
-  pack_and_write(pdu, pdu_len_bytes, 0, crc_ok, cc_idx, tti, SRSLTE_MRNTI, DIRECTION_DOWNLINK, M_RNTI);
+  pack_and_write(pdu, pdu_len_bytes, 0, crc_ok, cc_idx, tti, SRSRAN_MRNTI, DIRECTION_DOWNLINK, M_RNTI);
 }
 void mac_pcap::write_dl_sirnti(uint8_t* pdu, uint32_t pdu_len_bytes, bool crc_ok, uint32_t tti, uint8_t cc_idx)
 {
-  pack_and_write(pdu, pdu_len_bytes, 0, crc_ok, cc_idx, tti, SRSLTE_SIRNTI, DIRECTION_DOWNLINK, SI_RNTI);
+  pack_and_write(pdu, pdu_len_bytes, 0, crc_ok, cc_idx, tti, SRSRAN_SIRNTI, DIRECTION_DOWNLINK, SI_RNTI);
 }
 
 void mac_pcap::write_ul_rrc_pdu(const uint8_t* input, const int32_t input_len)
@@ -214,4 +214,4 @@ void mac_pcap::write_ul_rrc_pdu(const uint8_t* input, const int32_t input_len)
 
   write_ul_crnti(pdu, pdu_ptr - pdu, 14931, true, 0, 0);
 }
-} // namespace srslte
+} // namespace srsran

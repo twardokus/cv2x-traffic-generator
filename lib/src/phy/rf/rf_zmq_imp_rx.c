@@ -1,14 +1,14 @@
 /*
  * Copyright 2013-2020 Software Radio Systems Limited
  *
- * This file is part of srsLTE.
+ * This file is part of srsRAN.
  *
- * srsLTE is free software: you can redistribute it and/or modify
+ * srsRAN is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
  * published by the Free Software Foundation, either version 3 of
  * the License, or (at your option) any later version.
  *
- * srsLTE is distributed in the hope that it will be useful,
+ * srsRAN is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Affero General Public License for more details.
@@ -21,7 +21,7 @@
 
 #include "rf_zmq_imp_trx.h"
 #include <inttypes.h>
-#include <srslte/phy/utils/vector.h>
+#include <srsran/phy/utils/vector.h>
 #include <stdlib.h>
 #include <string.h>
 #include <zmq.h>
@@ -32,7 +32,7 @@ static void* rf_zmq_async_rx_thread(void* h)
 
   while (q->sock && q->running) {
     int     nbytes = 0;
-    int     n      = SRSLTE_ERROR;
+    int     n      = SRSRAN_ERROR;
     uint8_t dummy  = 0xFF;
 
     rf_zmq_info(q->id, "-- ASYNC RX wait...\n");
@@ -78,7 +78,7 @@ static void* rf_zmq_async_rx_thread(void* h)
 
       // Try to write in ring buffer
       while (n < 0 && q->running) {
-        n = srslte_ringbuffer_write_timed(&q->ringbuffer, q->temp_buffer, nbytes, ZMQ_TIMEOUT_MS);
+        n = srsran_ringbuffer_write_timed(&q->ringbuffer, q->temp_buffer, nbytes, ZMQ_TIMEOUT_MS);
       }
 
       // Check write
@@ -87,7 +87,7 @@ static void* rf_zmq_async_rx_thread(void* h)
                     "   - received %d baseband samples (%d B). %d samples available.\n",
                     NBYTES2NSAMPLES(n),
                     n,
-                    NBYTES2NSAMPLES(srslte_ringbuffer_status(&q->ringbuffer)));
+                    NBYTES2NSAMPLES(srsran_ringbuffer_status(&q->ringbuffer)));
       }
     }
   }
@@ -97,7 +97,7 @@ static void* rf_zmq_async_rx_thread(void* h)
 
 int rf_zmq_rx_open(rf_zmq_rx_t* q, rf_zmq_opts_t opts, void* zmq_ctx, char* sock_args)
 {
-  int ret = SRSLTE_ERROR;
+  int ret = SRSRAN_ERROR;
 
   if (q) {
     // Zero object
@@ -166,18 +166,18 @@ int rf_zmq_rx_open(rf_zmq_rx_t* q, rf_zmq_opts_t opts, void* zmq_ctx, char* sock
     }
 #endif
 
-    if (srslte_ringbuffer_init(&q->ringbuffer, ZMQ_MAX_BUFFER_SIZE)) {
+    if (srsran_ringbuffer_init(&q->ringbuffer, ZMQ_MAX_BUFFER_SIZE)) {
       fprintf(stderr, "Error: initiating ringbuffer\n");
       goto clean_exit;
     }
 
-    q->temp_buffer = srslte_vec_malloc(ZMQ_MAX_BUFFER_SIZE);
+    q->temp_buffer = srsran_vec_malloc(ZMQ_MAX_BUFFER_SIZE);
     if (!q->temp_buffer) {
       fprintf(stderr, "Error: allocating rx buffer\n");
       goto clean_exit;
     }
 
-    q->temp_buffer_convert = srslte_vec_malloc(ZMQ_MAX_BUFFER_SIZE);
+    q->temp_buffer_convert = srsran_vec_malloc(ZMQ_MAX_BUFFER_SIZE);
     if (!q->temp_buffer_convert) {
       fprintf(stderr, "Error: allocating rx buffer\n");
       goto clean_exit;
@@ -194,7 +194,7 @@ int rf_zmq_rx_open(rf_zmq_rx_t* q, rf_zmq_opts_t opts, void* zmq_ctx, char* sock
       goto clean_exit;
     }
 
-    ret = SRSLTE_SUCCESS;
+    ret = SRSRAN_SUCCESS;
   }
 
 clean_exit:
@@ -210,13 +210,13 @@ int rf_zmq_rx_baseband(rf_zmq_rx_t* q, cf_t* buffer, uint32_t nsamples)
     sample_sz  = 2 * sizeof(short);
   }
 
-  int n = srslte_ringbuffer_read_timed(&q->ringbuffer, dst_buffer, sample_sz * nsamples, ZMQ_TIMEOUT_MS);
+  int n = srsran_ringbuffer_read_timed(&q->ringbuffer, dst_buffer, sample_sz * nsamples, ZMQ_TIMEOUT_MS);
   if (n < 0) {
     return n;
   }
 
   if (q->sample_format == ZMQ_TYPE_SC16) {
-    srslte_vec_convert_if(dst_buffer, INT16_MAX, (float*)buffer, 2 * nsamples);
+    srsran_vec_convert_if(dst_buffer, INT16_MAX, (float*)buffer, 2 * nsamples);
   }
 
   return n;
@@ -241,7 +241,7 @@ void rf_zmq_rx_close(rf_zmq_rx_t* q)
     pthread_detach(q->thread);
   }
 
-  srslte_ringbuffer_free(&q->ringbuffer);
+  srsran_ringbuffer_free(&q->ringbuffer);
 
   if (q->temp_buffer) {
     free(q->temp_buffer);

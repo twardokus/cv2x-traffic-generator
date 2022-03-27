@@ -1,14 +1,14 @@
 /*
  * Copyright 2013-2020 Software Radio Systems Limited
  *
- * This file is part of srsLTE.
+ * This file is part of srsRAN.
  *
- * srsLTE is free software: you can redistribute it and/or modify
+ * srsRAN is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
  * published by the Free Software Foundation, either version 3 of
  * the License, or (at your option) any later version.
  *
- * srsLTE is distributed in the hope that it will be useful,
+ * srsRAN is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Affero General Public License for more details.
@@ -28,7 +28,7 @@
 #include <unistd.h>
 
 #include "crc_test.h"
-#include "srslte/srslte.h"
+#include "srsran/srsran.h"
 
 int      num_bits = 5001, crc_length = 24;
 uint32_t crc_poly = 0x1864CFB;
@@ -72,11 +72,11 @@ int main(int argc, char** argv)
   int          i;
   uint8_t*     data;
   uint32_t     crc_word, expected_word;
-  srslte_crc_t crc_p;
+  srsran_crc_t crc_p;
 
   parse_args(argc, argv);
 
-  data = srslte_vec_u8_malloc(num_bits + crc_length * 2);
+  data = srsran_vec_u8_malloc(num_bits + crc_length * 2);
   if (!data) {
     perror("malloc");
     exit(-1);
@@ -93,12 +93,12 @@ int main(int argc, char** argv)
   }
 
   // Initialize CRC params and tables
-  if (srslte_crc_init(&crc_p, crc_poly, crc_length)) {
+  if (srsran_crc_init(&crc_p, crc_poly, crc_length)) {
     exit(-1);
   }
 
   // generate CRC word
-  crc_word = srslte_crc_checksum(&crc_p, data, num_bits);
+  crc_word = srsran_crc_checksum(&crc_p, data, num_bits);
 
   free(data);
 
