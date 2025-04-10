@@ -22,6 +22,7 @@
 #ifndef SRSRAN_MOVE_CALLBACK_H
 #define SRSRAN_MOVE_CALLBACK_H
 
+#include <cstdio>
 #include <cstddef>
 #include <functional>
 #include <type_traits>
