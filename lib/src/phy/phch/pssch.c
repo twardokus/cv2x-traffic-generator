@@ -281,6 +281,15 @@ int srsran_pssch_encode(srsran_pssch_t* q, uint8_t* input, uint32_t input_len, c
 
   // Transport block CRC attachment
   srsran_crc_attach(&q->tb_crc, q->b, q->sl_sch_tb_len);
+//  printf("Computed CRC: 0x%08X\n", q->b[q->sl_sch_tb_len]);
+    uint32_t crc_value = 0;
+    for (int i = 0; i < 24; i++) {
+        crc_value = (crc_value << 1) | (q->b[q->sl_sch_tb_len+i] & 1);
+    }
+
+    // Print the resulting 24-bit value as a hex number.
+    // %06X prints six hexadecimal digits (with leading zeros if needed).
+    printf("CRC: 0x%06X\n", crc_value);
 
   for (int r = 0; r < q->cb_segm.C; r++) {
 

@@ -414,7 +414,10 @@ int main(int argc, char** argv)
   struct timeval tv;
   gettimeofday(&tv, NULL);
   srsran_random_t random_gen = srsran_random_init(tv.tv_usec);
+    srsue_vue_sl.pssch_tx.sl_sch_tb_len =
+            srsran_ra_tbs_from_idx(srsran_ra_tbs_idx_from_mcs(prog_args.mcs_idx, false, true), cell_sl.nof_prb);
   for (int i = 0; i < srsue_vue_sl.pssch_tx.sl_sch_tb_len; i++) {
+//  for (int i = 0; i < 256; i++) {
     tb[i] = srsran_random_uniform_int_dist(random_gen, 0, 1);
   }
 

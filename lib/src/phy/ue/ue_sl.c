@@ -65,6 +65,32 @@
 
 #define MAX_SFLEN SRSRAN_SF_LEN(srsran_symbol_sz(max_prb))
 
+void print_bits_as_hex(const uint8_t* bits, size_t num_bits) {
+    const char hex_digits[] = "0123456789ABCDEF";
+    size_t i = 0;
+
+    // Process complete nibbles (4 bits each)
+    for (; i + 4 <= num_bits; i += 4) {
+        // Assemble nibble: assuming bits[i] is the most significant bit in this group.
+        uint8_t nibble = (bits[i]   << 3) |
+                         (bits[i+1] << 2) |
+                         (bits[i+2] << 1) |
+                         (bits[i+3]);
+        printf("%c", hex_digits[nibble]);
+    }
+
+    // If there are leftover bits, pad them on the right (i.e. as if trailing zeros) and print one more digit.
+    if (i < num_bits) {
+        uint8_t nibble = 0;
+        int remaining = num_bits - i;
+        for (int j = 0; j < remaining; j++) {
+            nibble |= (bits[i+j] << (3 - j));  // Shift bits into position from MSB side
+        }
+        printf("%c", hex_digits[nibble]);
+    }
+
+    printf("\n");
+}
 
 int srsran_ue_sl_init(srsran_ue_sl_t* q,
                       srsran_cell_sl_t cell,
@@ -465,6 +491,9 @@ static int pssch_encode(srsran_ue_sl_t* q,
          q->pssch_tx.pssch_cfg.mcs_idx,
          q->pssch_tx.pssch_cfg.rv_idx,
          q->pssch_tx.pssch_cfg.sf_idx);
+
+    printf("Encoding TB data of length %d\n", q->pssch_tx.sl_sch_tb_len);
+    print_bits_as_hex(data->ptr, q->pssch_tx.sl_sch_tb_len);
 
     if (srsran_pssch_encode(&q->pssch_tx, data->ptr, q->pssch_tx.sl_sch_tb_len, q->sf_symbols_tx)) {
       ERROR("Error encoding PSSCH\n");
