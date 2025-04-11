@@ -29,6 +29,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include "srsran/common/pcap.h"
 #include "srsran/phy/ch_estimation/chest_sl.h"
 #include "srsran/phy/common/phy_common_sl.h"
 #include "srsran/phy/dft/ofdm.h"
@@ -42,8 +43,34 @@
 #include "srsran/phy/utils/debug.h"
 #include "srsran/phy/utils/vector.h"
 
+#define PCAP_FILENAME "/tmp/pssch.pcap"
 
 bool keep_running = true;
+
+void pcap_pack_and_write(FILE*    pcap_file,
+                         uint8_t* pdu,
+                         uint32_t pdu_len_bytes,
+                         uint8_t  reTX,
+                         bool     crc_ok,
+                         uint32_t tti,
+                         uint16_t crnti,
+                         uint8_t  direction,
+                         uint8_t  rnti_type)
+{
+  MAC_Context_Info_t context = {.radioType      = FDD_RADIO,
+                                .direction      = direction,
+                                .rntiType       = rnti_type,
+                                .rnti           = crnti,
+                                .ueid           = 1,
+                                .isRetx         = reTX,
+                                .crcStatusOK    = crc_ok,
+                                .sysFrameNumber = (uint16_t)(tti / SRSRAN_NOF_SF_X_FRAME),
+                                .subFrameNumber = (uint16_t)(tti % SRSRAN_NOF_SF_X_FRAME),
+                                .nbiotMode      = 0};
+  if (pdu) {
+    LTE_PCAP_MAC_WritePDU(pcap_file, &context, pdu, pdu_len_bytes);
+  }
+}
 
 srsran_cell_sl_t cell_sl = {.nof_prb = 50, .tm = SRSRAN_SIDELINK_TM4, .cp = SRSRAN_CP_NORM, .N_sl_id = 0};
 
@@ -105,7 +132,6 @@ void usage(prog_args_t* args, char* prog)
   printf("\t-s size_sub_channel [Default for 50 prbs %d]\n", args->size_sub_channel);
   printf("\t-t Sidelink transmission mode {1,2,3,4} [Default %d]\n", (cell_sl.tm + 1));
   printf("\t-v srsran_verbose\n");
-
 }
 
 void parse_args(prog_args_t* args, int argc, char** argv)
@@ -190,19 +216,21 @@ int main(int argc, char** argv)
 
   parse_args(&prog_args, argc, argv);
 
+  FILE* pcap_file = LTE_PCAP_Open(MAC_LTE_DLT, PCAP_FILENAME);
+
   /***** logfile *******/
   struct tm* timeinfo;
   time_t     current_time = time(0); // Get the system time
   timeinfo                = localtime(&current_time);
 
-  FILE *logfile;
+  FILE* logfile;
   if (prog_args.log_file_name) {
     logfile = fopen(prog_args.log_file_name, "w");
   } else {
 
-    const char * home = getenv("HOME");
-    const char * subPath = "/v2x_pssch_ue_logfiles";
-    char * path = (char*)malloc(strlen(home) + strlen(subPath) + 1);
+    const char* home    = getenv("HOME");
+    const char* subPath = "/v2x_pssch_ue_logfiles";
+    char*       path    = (char*)malloc(strlen(home) + strlen(subPath) + 1);
     strcpy(path, home);
     strcat(path, subPath);
 
@@ -235,7 +263,8 @@ int main(int argc, char** argv)
     ERROR("Error initializing sl_comm_resource_pool\n");
     return SRSRAN_ERROR;
   }
-
+  sl_comm_resource_pool.num_sub_channel  = prog_args.num_sub_channel;
+  sl_comm_resource_pool.size_sub_channel = prog_args.size_sub_channel;
 
   printf("Opening RF device...\n");
 
@@ -244,8 +273,7 @@ int main(int argc, char** argv)
     exit(-1);
   }
 
-  printf("Set RX freq: %.6f MHz\n",
-         srsran_rf_set_rx_freq(&radio, prog_args.nof_rx_antennas, prog_args.rf_freq) / 1e6);
+  printf("Set RX freq: %.6f MHz\n", srsran_rf_set_rx_freq(&radio, prog_args.nof_rx_antennas, prog_args.rf_freq) / 1e6);
   printf("Set RX gain: %.1f dB\n", srsran_rf_set_rx_gain(&radio, prog_args.rf_gain));
   int srate = srsran_sampling_freq_hz(cell_sl.nof_prb);
 
@@ -343,13 +371,13 @@ int main(int argc, char** argv)
     return SRSRAN_ERROR;
   }
 
-  uint8_t tb[SRSRAN_SL_SCH_MAX_TB_LEN] = {};
-
-  srsran_ue_sync_t ue_sync = {};
-  srsran_cell_t cell = {};
-  cell.nof_prb       = cell_sl.nof_prb;
-  cell.cp            = SRSRAN_CP_NORM;
-  cell.nof_ports     = 1;
+  uint8_t          tb[SRSRAN_SL_SCH_MAX_TB_LEN]            = {};
+  uint8_t          packed_tb[SRSRAN_SL_SCH_MAX_TB_LEN / 8] = {};
+  srsran_ue_sync_t ue_sync                                 = {};
+  srsran_cell_t    cell                                    = {};
+  cell.nof_prb                                             = cell_sl.nof_prb;
+  cell.cp                                                  = SRSRAN_CP_NORM;
+  cell.nof_ports                                           = 1;
 
   if (srsran_ue_sync_init_multi_decim_mode(&ue_sync,
                                            cell.nof_prb,
@@ -446,18 +474,39 @@ int main(int argc, char** argv)
               if (srsran_pssch_decode(&pssch, equalized_sf_buffer, tb, SRSRAN_SL_SCH_MAX_TB_LEN) == SRSRAN_SUCCESS) {
                 num_decoded_tb++;
 
+                srsran_bit_pack_vector(tb, packed_tb, pssch.sl_sch_tb_len);
+                pcap_pack_and_write(pcap_file,
+                                    packed_tb,
+                                    pssch.sl_sch_tb_len / 8,
+                                    0,
+                                    true,
+                                    current_sf_idx,
+                                    0x1001,
+                                    DIRECTION_UPLINK,
+                                    SL_RNTI);
                 // write logfile
-                fprintf(logfile,"%lu,%d,%d,%d,%d,%d,%d\n",
-                        (uint64_t) round(srsran_timestamp_real(&ue_sync.last_timestamp) * 1e6),
+                fprintf(logfile,
+                        "%lu,%d,%d,%d,%d,%d,%d\n",
+                        (uint64_t)round(srsran_timestamp_real(&ue_sync.last_timestamp) * 1e6),
                         pssch_prb_start_idx,
                         nof_prb_pssch,
                         N_x_id,
                         sci.mcs_idx,
                         rv_idx,
                         current_sf_idx);
-
-
               }
+              // } else {
+              //
+              //   fprintf(logfile,
+              //           "%lu,%d,%d,%d,%d,%d,%d\n",
+              //           (uint64_t)round(srsran_timestamp_real(&ue_sync.last_timestamp) * 1e6),
+              //           pssch_prb_start_idx,
+              //           nof_prb_pssch,
+              //           N_x_id,
+              //           sci.mcs_idx,
+              //           rv_idx,
+              //           current_sf_idx);
+              // }
             }
           }
         }

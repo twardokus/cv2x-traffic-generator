@@ -154,6 +154,7 @@ int srsran_sci_format1_unpack(srsran_sci_t* q, uint8_t* input)
   q->priority        = srsran_bit_pack(&input, 3);
   q->resource_reserv = srsran_bit_pack(&input, 4);
   q->riv      = srsran_bit_pack(&input, (uint32_t)ceil(log2(((q->num_sub_channel) * (q->num_sub_channel + 1) / 2))));
+  // q->riv      = srsran_bit_pack(&input, (uint32_t)ceil(log2(((10) * (10 + 1) / 2))));
   q->time_gap = srsran_bit_pack(&input, 4);
   q->mcs_idx  = srsran_bit_pack(&input, 5);
   q->retransmission      = srsran_bit_pack(&input, 1);

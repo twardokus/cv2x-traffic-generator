@@ -30,6 +30,33 @@
 #include "srsran/phy/utils/debug.h"
 #include "srsran/phy/utils/vector.h"
 
+void print_bits_as_hex(const uint8_t* bits, size_t num_bits) {
+  const char hex_digits[] = "0123456789ABCDEF";
+  size_t i = 0;
+
+  // Process complete nibbles (4 bits each)
+  for (; i + 4 <= num_bits; i += 4) {
+    // Assemble nibble: assuming bits[i] is the most significant bit in this group.
+    uint8_t nibble = (bits[i]   << 3) |
+                     (bits[i+1] << 2) |
+                     (bits[i+2] << 1) |
+                     (bits[i+3]);
+    printf("%c", hex_digits[nibble]);
+  }
+
+  // If there are leftover bits, pad them on the right (i.e. as if trailing zeros) and print one more digit.
+  if (i < num_bits) {
+    uint8_t nibble = 0;
+    int remaining = num_bits - i;
+    for (int j = 0; j < remaining; j++) {
+      nibble |= (bits[i+j] << (3 - j));  // Shift bits into position from MSB side
+    }
+    printf("%c", hex_digits[nibble]);
+  }
+
+  printf("\n");
+}
+
 int srsran_pssch_init(srsran_pssch_t* q, srsran_cell_sl_t cell, srsran_sl_comm_resource_pool_t sl_comm_resource_pool)
 {
   if (q == NULL) {
@@ -461,7 +488,8 @@ int srsran_pssch_decode(srsran_pssch_t* q, cf_t* equalized_sf_syms, uint8_t* out
 
       // CRC check
       if (srsran_bit_diff(q->cb_crc_temp, &q->c_r[(K_r - L)], L) != 0) {
-        return SRSRAN_ERROR;
+        printf("CRC check failure!\n");
+	return SRSRAN_ERROR;
       }
     }
 
@@ -478,8 +506,18 @@ int srsran_pssch_decode(srsran_pssch_t* q, cf_t* equalized_sf_syms, uint8_t* out
   // Copy received crc to temp
   memcpy(q->tb_crc_temp, &q->b[B - SRSRAN_PSSCH_CRC_LEN], sizeof(uint8_t) * SRSRAN_PSSCH_CRC_LEN);
 
-  // Re-attach crc
+
+  printf("Received TB of length %d\n", q->sl_sch_tb_len);
+  print_bits_as_hex(q->b, q->sl_sch_tb_len);
+
   srsran_crc_attach(&q->tb_crc, q->b, (int)(B - SRSRAN_PSSCH_CRC_LEN));
+
+  uint32_t received_crc = 0;
+  // memcpy(&received_crc, q->tb_crc_temp, sizeof(uint32_t));
+  for (int i = 0; i < 24; i++) {
+    received_crc = (received_crc << 1) | (q->tb_crc_temp[i] & 1);
+  }
+  printf("Received CRC: 0x%06X\n", received_crc);
 
   // CRC check
   if (srsran_bit_diff(q->tb_crc_temp, &q->b[(B - SRSRAN_PSSCH_CRC_LEN)], SRSRAN_PSSCH_CRC_LEN) != 0) {
