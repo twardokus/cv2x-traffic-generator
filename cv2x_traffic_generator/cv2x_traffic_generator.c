@@ -406,7 +406,7 @@ int main(int argc, char** argv)
   srsran_ue_sl_init(&srsue_vue_sl, cell_sl, sl_comm_resource_pool, 0);
 
   /***** prepare TX data *******/
-  srsran_set_sci(&srsue_vue_sl.sci_tx, 1, REP_INTERVL, 0, false, 0, 4);
+  srsran_set_sci(&srsue_vue_sl.sci_tx, 1, REP_INTERVL, 0, false, 0, prog_args.mcs_idx);
 
   // Randomize tx data to fill the transport block
   // Transport block buffer
